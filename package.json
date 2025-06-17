@@ -5,7 +5,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "postReadyToCommit": "node scripts/postReadyToCommit.cjs",
     "build:cache": "synpress",
     "build:cache:force": "synpress --force",
     "build:cache:headless": "synpress --headless",
