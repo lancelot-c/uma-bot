@@ -1,0 +1,9 @@
+node_modules
+.env
+.cache-synpress
+package-lock.json
+playwright-report
+.DS_STORE
+test-results
+/blob-report/
+/playwright/.cache/

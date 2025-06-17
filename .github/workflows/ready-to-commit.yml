@@ -1,0 +1,105 @@
+name: Ready to commit
+on:
+  workflow_dispatch:
+  schedule:
+    # Run every day at 11:00 UTC
+    - cron: '0 11 * * *'
+
+jobs:
+  playwright:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+    - name: Install dependencies # because isCommitPhase needs viem
+      run: npm install
+    - name: Install tsx globally to run ts files independently
+      run: npm i -g tsx
+
+    - name: Cancel job if not commit phase
+      continue-on-error: false # Make sure we stop the job if this script fails
+      run: tsx smart-contract-calls/isCommitPhase.ts
+      env:
+        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps chromium
+    - name: Run Playwright test ready-to-commit.spec.ts
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: xvfb-run npx playwright test test/ready-to-commit.spec.ts
+      env: # Set the secrets as an environment variable
+        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        DISCORD_EMAIL: ${{ secrets.DISCORD_EMAIL }}
+        DISCORD_PASSWORD: ${{ secrets.DISCORD_PASSWORD }}
+        ATTEMPT_DISCORD_LOGIN: ${{ secrets.ATTEMPT_DISCORD_LOGIN }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        TRUSTED_USERS: ${{ secrets.TRUSTED_USERS }}
+
+
+    - name: Remove invalid delegators
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: tsx smart-contract-calls/validate-delegators.ts
+      env: # Set the secrets as an environment variable
+        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        MINIMUM_UMA_STAKE: ${{ secrets.MINIMUM_UMA_STAKE }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        PRIVATE_KEYS_V2: ${{ secrets.PRIVATE_KEYS }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+
+
+    - name: Accept new delegation requests
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: tsx smart-contract-calls/accept-delegators.ts
+      # run: xvfb-run npx playwright test test/accept-join-requests.spec.ts
+      env: # Set the secrets as an environment variable
+        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
+        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        MINIMUM_UMA_STAKE: ${{ secrets.MINIMUM_UMA_STAKE }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+        
+    # See https://snyk.io/blog/how-to-add-playwright-tests-pr-ci-github-actions/
+    - name: Upload test results
+      continue-on-error: true
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: playwright-report
+        path: test-results
+
+    - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
+      with:
+        # Optional. Commit message for the created commit.
+        # Defaults to "Apply automatic changes"
+        commit_message: Automated report
