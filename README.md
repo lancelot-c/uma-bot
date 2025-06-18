@@ -3,9 +3,11 @@
 🤝 Made by the [Polymarket](https://polymarket.com/)/[UMA](https://uma.xyz/) community, for the community
 
 ## Features
-🔒 Self-custodial vote delegation - 🤖 Automated voting with Github Actions - 💁‍♂️ Permissionless exit - 🌍 Public logs
+🔒 Self-custodial vote delegation - 🤖 Automated voting with Github Actions - 💁‍♂️ Permissionless exit
 
-🛢️ Gas sponsorship - 👌 Free to use for everyone - 👾 Discord webhook support - 💪 100% fully-typed Typescript
+🛢️ Gas sponsorship - 👌 Free to use for everyone - 🌍 Public logs - 👾 Discord webhook support
+
+
 
 👉 New answers are published everyday at 11AM UTC in `test-data/answers.json`
 
