@@ -45,7 +45,8 @@ jobs:
       env:
         ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
         ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-        RPC_URL: ${{ secrets.RPC_URL }}        
+        RPC_URL: ${{ secrets.RPC_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
 
     #V2
     - name: Reveal V2
