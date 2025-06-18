@@ -35,6 +35,7 @@ jobs:
         ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
         ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         RPC_URL: ${{ secrets.RPC_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
     #V2
     - name: Commit V2
@@ -50,47 +51,6 @@ jobs:
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
-    # - name: Install Playwright Browsers
-    #   run: npx playwright install --with-deps chromium
-    # - name: Install wallets
-    #   run: xvfb-run npx synpress --debug --force # --force enables to update the wallet cache when the Github Secret changes
-    #   env: # Set the secret as an environment variable
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-    #     ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-
-    # Better not to recompute answers again as they may differ from the ones posted on Discord at the "ready to commit" stage
-    # Pool members need to know what answers they are getting in advance
-    # Also protects UMA.rocks from potential law suits
-    # Predictability > Correctness
-    
-
-    # V1
-    # - name: Commit V1
-    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
-    #   run: xvfb-run npx playwright test test/commit.spec.ts
-    #   env: # Set the secret as an environment variable
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     PRIVATE_KEYS_V2: ${{ secrets.PRIVATE_KEYS_V2 }}
-    #     ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-    #     ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-
-    # See https://snyk.io/blog/how-to-add-playwright-tests-pr-ci-github-actions/
-    # - name: Upload test results
-    #   continue-on-error: true
-    #   if: always()
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: playwright-report
-    #     path: test-results
-
     - name: Post summary on Discord
       continue-on-error: true # See https://stackoverflow.com/a/70048004
       run: tsx smart-contract-calls/summary.ts
@@ -105,6 +65,7 @@ jobs:
         DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
         DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
     - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
       with:
