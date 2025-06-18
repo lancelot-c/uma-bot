@@ -1,8 +1,8 @@
-import { postOnDiscord, getDirectories, getDelegateAddresses } from '../test/utils';
+import { postOnDiscord, getDirectories } from '../test/utils';
 import path from 'path'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createPublicEthClient, getCurrentPhase, logError, ZERO_ADDRESS } from './common';
+import { createPublicEthClient, getCurrentPhase, logError, ZERO_ADDRESS, getDelegateAddresses } from './common';
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -29,7 +29,7 @@ let failedTransactions: DelegateTransaction[] = failedFolders.map(f => f.split('
 console.log(`failedFolders: `, failedFolders)
 console.log(`failedTransactions: `, failedTransactions)
 
-let delegateWallets = getDelegateAddresses()[0]
+let delegateWallets = getDelegateAddresses()
 
 // IMPORTANT mechanism to make sure that no wallet was left behind
 delegateWallets.forEach(delegateWallet => {

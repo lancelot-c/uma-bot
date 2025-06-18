@@ -591,15 +591,21 @@ export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccoun
 
 }
 
+export function getDelegatePrivateKeys(): `0x${string}`[] {
+
+    return (process.env.PRIVATE_KEYS as string).split(',').map(key => `0x${decrypt(key)}`) as `0x${string}`[]
+
+}
+
 export function getDelegateAccounts(): PrivateKeyAccount[] {
 
     return getDelegatePrivateKeys().map(key => privateKeyToAccount(key))
 
 }
 
-function getDelegatePrivateKeys(): `0x${string}`[] {
+export function getDelegateAddresses(): `0x${string}`[] {
 
-    return (process.env.PRIVATE_KEYS_V2 as string).split(',').map(key => decrypt(key)).map(key => `0x${key}`) as `0x${string}`[]
+    return getDelegateAccounts().map(account => account.address)
 
 }
 

@@ -4,10 +4,9 @@ import fs from 'fs'
 import { readdir } from 'fs/promises'
 import { z } from 'zod'
 import { MetaMask } from '@synthetixio/synpress/playwright'
-import { privateToAddress, toChecksumAddress } from 'ethereumjs-util'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { ALWAYS_APPROVE_GOVERNANCE_PROPOSALS, createPublicEthClient, decodeIdentifier, getPendingRequests, logError, PriceIdentifier } from './../smart-contract-calls/common'
+import { ALWAYS_APPROVE_GOVERNANCE_PROPOSALS, createPublicEthClient, decodeIdentifier, getDelegatePrivateKeys, getPendingRequests, logError, PriceIdentifier } from './../smart-contract-calls/common'
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -267,138 +266,7 @@ export function createEmptyFolder(folderRelativePath: string) {
 // See https://stackoverflow.com/a/24594123
 export const getDirectories = async (source: string) => (await readdir(source, { withFileTypes: true })).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)
 
-export async function connectWalletAndSign(i: number, page: Page, metamaskPage: Page, metamask: MetaMask): Promise<[boolean, string]> {
 
-    const umaAppUrl = `https://vote.uma.xyz/`
-
-    // should open UMA voting app
-    console.log(`> Load page ${umaAppUrl}`)
-    await page.goto(umaAppUrl);
-
-    // should click on connect wallet buttons
-    const connectButton = page.getByRole('button', { name: 'Connect wallet', exact: true })
-    const metamaskButton = page.getByRole('button', { name: 'MetaMask' })
-    await connectButton.click();
-    await metamaskButton.click();
-
-
-    // should connect to UMA voting app   
-    const accountName = `Account ${SEED_PHRASE_OFFSET + i}`
-    console.log(`> Connect wallet ${accountName} to UMA app`)
-
-    await metamask.connectToDapp([accountName])
-    // await metamask.switchAccount(accountName) <-- doesn't work, Synpress bug
-    await customMetamaskSwitchAccount(metamaskPage, accountName)
-
-
-    const privateKey = process.env.PRIVATE_KEYS.split(',')[i]
-    const bufferAddress = privateToAddress(Buffer.from(privateKey, 'hex'))
-    let delegateAddress: `0x${string}` = `0x${Buffer.from(bufferAddress).toString('hex')}`;
-    console.log(`delegateAddress = ${delegateAddress}`)
-
-    console.log(`> Applying checksum`)
-    delegateAddress = toChecksumAddress(delegateAddress) as `0x${string}`
-    console.log(`checksumed delegateAddress = ${delegateAddress}`)
-
-
-    // Check if the delegate address on the UMA app is matching ours,
-    // otherwise it means our Metamask cache wasn't updated with the latest value of process.env.PRIVATE_KEYS
-    const shortenedDelegateAddress = `${delegateAddress.substring(0, 6)}…${delegateAddress.slice(-4)}`
-    console.log(`shortenedDelegateAddress = ${shortenedDelegateAddress}`)
-    let addressButton = page.locator(`//button[contains(text(), '${shortenedDelegateAddress}')]`).first()
-    
-    try {
-
-        await addressButton.waitFor({ timeout: 10000 })
-        console.log('✓ Delegate address on UMA app matches our delegate address')
-
-    } catch (err) {
-
-        addressButton = page.locator(`//button[contains(text(), '0x')]`).first()
-        const got = await addressButton.innerText()
-        // await page.screenshot({ path: 'test-data/addressButton-not-found-error.png' });
-        logError(`Connected with the wrong address. Expected ${shortenedDelegateAddress}, got ${got}.`)
-        return [false, delegateAddress]
-
-    }
-
-    // Get UMA stake
-    let umaStakeString
-    let umaStake = 0
-
-    try {
-
-        // Typical string is "Your delegator is staking 1,001 of their 1,001 UMA tokens."
-        // The following regexp match "Your delegator is staking ${any digit}"
-        const umaStakeLocator = page.getByText(/Your delegator is staking [1-9]\d*/).first();
-        umaStakeString = await umaStakeLocator.textContent({ timeout: 10000 })
-
-    } catch (err) {
-
-        logError('Cannot find locator umaStakeLocator')
-
-    }
-
-
-
-    // umaStakeString can be null when the wallet doesn't have a delegator anymore
-    // in this case, we will have "You are staking 0 of your 0 UMA tokens." and umaStakeLocator won't be found
-    if (umaStakeString) {
-
-        console.log(`Found umaStakeString: ${umaStakeString}`)
-        const match = umaStakeString.match(/\d+\.\d+|\d+\b|\d+(?=\w)/g) // see https://stackoverflow.com/a/609593
-
-        if (match) {
-            const numbers = match.map(function (v) { return +v; });
-
-            if (numbers && numbers.length > 0) {
-                umaStake = numbers[0]
-            }
-        }
-    }
-
-
-    // Remove wallet from the pool if it doesn't have a UMA stake
-    if (umaStake > 0) {
-
-        // Sign
-        console.log('> Sign')
-
-        try {
-
-            const signButton = page.getByRole('button', { name: 'Sign', exact: true })
-            await signButton.click();
-            await metamask.confirmSignature();
-
-        } catch (err) {
-
-            logError(`Signing failed`)
-            return [false, delegateAddress]
-
-        }
-
-        return [true, delegateAddress]
-
-    } else {
-
-        // WARNING🚨: the removeDelegator function is way too risky to implement programatically
-
-        /* If for some reason one day the umaStakeString isn't detected properly,
-        then every single member of the pool will be kicked out of the pool
-        AND SLASHED because we wouldn't be able to vote for them.
-        Also we won't be able to make them join again except by posting a message on Discord
-        and hoping they read it */
-
-        // removeDelegator(page)
-
-        addSkippedWallet(delegateAddress)
-
-        // removeMember(delegateAddress)
-        return [false, delegateAddress]
-
-    }
-
-}
 
 export async function saveAnswers(answers: Answer[]): Promise<boolean> {
 
@@ -421,25 +289,7 @@ export async function saveAnswers(answers: Answer[]): Promise<boolean> {
     return customPromise;
 }
 
-// export async function getAnswersJson(): Promise<[string[], string[], boolean[]]> {
 
-//     const { default: answersFile } = await import("../test-data/answers.json", {
-//         with: { type: "json" },
-//     });
-
-//     console.log('Content of ./../test-data/answers.json')
-//     console.log(answersFile)
-
-//     // answersFile.questions can only be added manually
-//     const questions = (answersFile as any).questions ? (answersFile as any).questions : []
-
-//     return [questions, answersFile.answers, answersFile.skip]
-// }
-
-// export async function getAnswersOnly(): Promise<(string | undefined)[]> {
-//     const json = await getAnswersJson()
-//     return json[2].map((item, index) => item ? undefined : json[1][index])
-// }
 
 export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answer[]]> {
 
@@ -618,66 +468,6 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
     return [commitPhaseOpen, revealPhaseOpen, answers]
 }
 
-// export async function postOnUmaDiscord(page: Page, answers: Answer[]) {
-
-//     const continueInBrowserButton = page.getByRole('button', { name: 'Continue in Browser' })
-//     const emailField = page.getByLabel('Email or phone number*')
-//     const passwordField = page.getByLabel('Password*')
-//     const loginButton = page.getByRole('button', { name: 'Log in' })
-//     const threadMessageField = page.getByLabel(`Message "`).last()
-
-//     // Post answers on UMA Discord
-//     console.log('> Post answers on UMA Discord')
-
-//     // should open Discord app
-//     const discordUrl = `https://discord.com/channels/718590743446290492/964000735073284127`
-//     console.log(`> Load page ${discordUrl}`)
-//     await page.goto(discordUrl);
-
-//     // On Github Actions, Discord isn't installed so this button won't be shown
-//     if (process.env.LOCAL === "true") {
-//         await continueInBrowserButton.click()
-//     }
-
-//     console.log(`> Log in to Discord`)
-//     const options = { delay: 90 }
-//     await emailField.pressSequentially(process.env.DISCORD_EMAIL, options)
-//     await passwordField.pressSequentially(process.env.DISCORD_PASSWORD, options)
-//     await loginButton.click()
-
-
-//     // Button to thread
-//     for (let a = 0; a < answers.length; a++) {
-
-//         console.log(`> Entering thread ${answers[a].timestamp}`)
-//         await page.getByRole('button', { name: `${answers[a].timestamp}` }).first().click()
-
-//         // const message = `P${answers[a]}`
-//         const message = [
-//             `Our voting pool will vote for **P${answers[a].choice}**.`,
-//             // '',
-//             // '',
-//             // `If you are part of our pool and disagree with us, you have 1 hour to vote for a different answer, otherwise you don’t need to do anything as we will vote for you.`
-//         ]
-
-//         console.log(`> Writing message for answer P${answers[a]}`)
-
-//         for (let line = 0; line < message.length; line++) {
-//             if (message[line]) {
-//                 await threadMessageField.pressSequentially(message[line], options)
-//             } else {
-//                 // await page.keyboard.down('Shift');
-//                 await threadMessageField.press('Shift+Enter', options)
-//                 // await page.keyboard.up('Shift');
-//             }
-//         }
-
-//         // Send
-//         console.log(`> Posting message`)
-//         await threadMessageField.press('Enter', options)
-//     }
-
-// }
 
 export async function executeWithTimeout(fn: () => any, { timeout }: { timeout: number}): Promise<boolean> {
 
@@ -692,28 +482,6 @@ export async function executeWithTimeout(fn: () => any, { timeout }: { timeout: 
         await fn()
         resolve(true)
     });
-
-}
-
-export function getDelegatePrivateKeys(): string[] {
-    return process.env.PRIVATE_KEYS.split(',')
-}
-
-export function getDelegateAddresses(): [`0x${string}`[], string[]] {
-
-    const privateKeys = getDelegatePrivateKeys()
-    const delegateAddresses = privateKeys.map(pv => getDelegateAddressFromPrivateKey(pv))
-
-    return [delegateAddresses, privateKeys];
-    
-}
-
-export function getDelegateAddressFromPrivateKey(privateKey: string): `0x${string}` {
-
-    const bufferAddress = privateToAddress(Buffer.from(privateKey, 'hex'))
-    let delegateAddress: `0x${string}` = `0x${Buffer.from(bufferAddress).toString('hex')}`
-    delegateAddress = toChecksumAddress(delegateAddress) as `0x${string}`
-    return delegateAddress
 
 }
 
@@ -736,12 +504,6 @@ export async function confirmMetamaskTransaction(metamask: MetaMask, delegateAdd
         addSuccessfulWallet(delegateAddress, '0x')
     }
 
-}
-
-export function isV2PrivateKey(i: number) {
-    const privateKey = process.env.PRIVATE_KEYS.split(',')[i]
-    const V2PrivateKeys = process.env.PRIVATE_KEYS_V2
-    return V2PrivateKeys.includes(privateKey)
 }
 
 async function computeDisputeAnswer(answer: Answer, priceIdentifier: PriceIdentifier, page: Page): Promise<Answer> {
