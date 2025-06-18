@@ -21,12 +21,9 @@ export async function updateGithubSecret(newValue: string, octokit: Octokit): Pr
 
     const secret = newValue
     let [key_id, key] = ['', '']
-    // console.log(`Setting "${secret}" as the new Github Secret`)
 
     try {
         [key_id, key] = await getGithubPublicKey(octokit)
-        // console.log(`key_id="${key_id}"`)
-        // console.log(`key="${key}"`)
     } catch (error: any) {
         logError(error);
         return false

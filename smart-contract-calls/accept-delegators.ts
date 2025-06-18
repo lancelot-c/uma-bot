@@ -1,6 +1,7 @@
 import { PrivateKeyAccount, PublicClient, WalletClient } from 'viem'
 import { umaContractAbi } from '../test/umaAbi'
 import { umaContractAddress, setDelegator, createWalletEthClient, createPublicEthClient, createRedisInstance, getPendingAccounts, logError, getLogs } from './common'
+import { createOctokit, updateGithubSecret } from './github'
 
 const redis = createRedisInstance()
 const pendingAccounts = await getPendingAccounts(redis)
@@ -101,31 +102,227 @@ async function acceptDelegationRequest(delegateAddress: `0x${string}`, stakerAdd
     const successful = await setDelegator(stakerAddress, account, publicClient, walletClient)
 
     if (successful) {
-        await addToBackend(delegateAddress, stakerAddress, umaStake) 
+        await addToDatabase(delegateAddress, stakerAddress, umaStake) 
     }
 
 }
 
-async function addToBackend(delegateAddress: `0x${string}`, stakerAddress: `0x${string}`, umaStake: number) {
+async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x${string}`, umaStake: number): Promise<void> {
     
-    console.log('Adding address to backend...')
+    console.log(`Processing new staker ${stakerAddress} with delegate ${delegateAddress}`)
 
-    // Confirm join
-    const request = new Request("https://www.uma.rocks/api/join", {
-        method: "POST",
-        body: JSON.stringify({ delegateAddress, stakerAddress, umaStake }),
+    const delegateAddressString: string = delegateAddress.replace('0x', '')
+    const stakerAddressString: string = stakerAddress.replace('0x', '')
+
+    const encryptedPrivateKey = await getDelegateEncryptedPrivateKey(delegateAddressString)
+
+    if (!encryptedPrivateKey) {
+        logError(`Couldn't retrieve delegate private key.`)
+        return;
+    }
+
+
+    // Update KV
+    let [newValue, err] = await updateKV(encryptedPrivateKey, delegateAddressString, stakerAddressString, umaStake)
+    if (err) {
+        logError(err)
+        return
+    }
+
+    // Update Github Secret
+    if (newValue) {
+        
+        const octokit = createOctokit()
+        const success = await updateGithubSecret(newValue, octokit)
+
+        if (!success) {
+            logError(`Couldn't update Github Secret`)
+            return
+        }
+
+    }
+
+
+    // Post on UMA.rocks Discord
+    err = await postNewMemberOnDiscord(stakerAddressString, umaStake)
+    if (err) {
+        logError(err)
+        return
+    }
+}
+
+async function getDelegateEncryptedPrivateKey(delegateAddress: string): Promise<string | undefined> {
+
+    const pending: any = await redis.get("PENDING")
+    const delegates: string[] = pending.all.map((elmt: any) => elmt.a.toLowerCase())
+    delegateAddress = delegateAddress.replace('0x', '').toLowerCase()
+
+    const index = delegates.indexOf(delegateAddress)
+
+    if (index > -1) {
+
+        const privateKey = pending.all[index].b as string
+        return privateKey
+
+    } else {
+        return undefined
+    }
+
+}
+
+async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: string, stakerAddress: string, umaStake: number): Promise<[string, string]> {
+
+    let newKValue: string = ''
+    let errorMessage: string = ''
+
+    // Add to K
+    console.log('Add to K')
+    try {
+
+        const kvKey = 'K'
+        let oldValue = await redis.get(kvKey) as string;
+        newKValue = oldValue
+
+        // First key added
+        if (!oldValue) {
+            newKValue = `${encryptedDelegatePrivateKey}`
+            await redis.set(kvKey, newKValue);
+        }
+        // Is not a duplicated key
+        else if (!oldValue.includes(encryptedDelegatePrivateKey)) {
+            newKValue += `,${encryptedDelegatePrivateKey}`
+            await redis.set(kvKey, newKValue);
+        } else {
+            // Duplicated key, do not change KV
+        }
+
+    } catch (err) {
+        errorMessage = `Could not add new member to K`
+        return [newKValue, errorMessage]
+    }
+
+
+    // Remove from PENDING
+    console.log('Remove from PENDING')
+    let signature = 0
+    const pending: any = (await redis.get("PENDING") as any).all
+
+    const indexToRemove = pending.map((elmt: any) => elmt.a).indexOf(delegateAddress)
+
+    if (indexToRemove > -1) { // only splice array when item is found
+
+        const s = pending[indexToRemove] ? pending[indexToRemove].signature : 0
+        signature = s ? s : 0
+        pending.splice(indexToRemove, 1); // 2nd parameter means remove one item only
+
+        const newPending = {
+            all: pending
+        }
+
+        try {
+            await redis.set("PENDING", newPending)
+        } catch (err) {
+            errorMessage = "Could not remove member from PENDING"
+            return [newKValue, errorMessage]
+        }
+
+    } else {
+        errorMessage = `${delegateAddress} not found in PENDING`
+        return [newKValue, errorMessage]
+    }
+
+
+
+
+    // Add to MEMBERS
+    console.log('Add to MEMBERS')
+    const currentMembers: any[] = (await redis.get("MEMBERS") as any).all
+    let found = false
+    
+    for (let i = 0; i < currentMembers.length; i++) {
+        if (currentMembers[i].delegate.toLowerCase() == delegateAddress.toLowerCase()) {
+            found = true;
+            break;
+        }
+    }
+    
+    if (!found) {
+
+        const newMember = {
+            delegate: delegateAddress,
+            k: encryptedDelegatePrivateKey,
+            delegator: stakerAddress,
+            umaStake,
+            signature
+        };
+        currentMembers.push(newMember)
+    
+        const newMembers = {
+            all: currentMembers
+        }
+    
+        try {
+            await redis.set("MEMBERS", newMembers)
+        } catch (err) {
+            errorMessage = "Could not add member to MEMBERS"
+            return [newKValue, errorMessage]
+        }
+
+    }
+
+    return [newKValue, errorMessage]
+}
+
+
+
+function numberWithCommas(x: number): string {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+async function postNewMemberOnDiscord(stakerAddress: string, umaStake: number): Promise<string> {
+
+    // Post on UMA.rocks Discord
+    console.log(`> Post message on Discord`)
+
+    const umaPrice = await redis.get("UMA_PRICE") as number;
+
+    const embed = {
+        "title": `Someone just joined the pool with ${numberWithCommas(umaStake)} UMA ($${numberWithCommas(Math.round(umaStake * umaPrice))}) 🥳`,
+        "description": `Welcome UMA holder 0x${stakerAddress} 👋`,
+        "color": 1467700,  // dark green - decimal index of a color, see https://www.spycolor.com
+    }
+
+    const params = {
+        // "content": ``,
+        "embeds": [embed]
+    }
+
+    const webhookUrl = process.env.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL as string
+
+
+    let resolve: Function;
+    const promise: Promise<string> = new Promise((r) => {
+        resolve = r;
     });
 
-    fetch(request)
-            .then(res => res.json())
-            .then(data => {
 
-                if (data.errorMessage) {
-                    logError(`Returned error in api/join fetch call: ${data.errorMessage}`);
-                } else {
-                    console.log('Returned message in api/join fetch call:');
-                    console.log(data);
-                }
+    fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify(params)
+    }).then(res => {
 
-            });
+        console.log(`Webhook response: { status: ${res.status}, statusText: ${res.statusText}, ok: ${res.ok} }`);
+        resolve('')
+
+    }).catch(err => {
+
+        console.error(err)
+        resolve(err)
+
+    })
+
+    return promise
 }
