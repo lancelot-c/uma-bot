@@ -3,7 +3,6 @@ import path from 'path'
 import fs from 'fs'
 import { readdir } from 'fs/promises'
 import { z } from 'zod'
-import { MetaMask } from '@synthetixio/synpress/playwright'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import { ALWAYS_APPROVE_GOVERNANCE_PROPOSALS, createPublicEthClient, decodeIdentifier, getDelegatePrivateKeys, getPendingRequests, logError, PriceIdentifier } from './../smart-contract-calls/common'
@@ -165,64 +164,6 @@ export async function postOnDiscord(embedTitle: string, embedColor: number, embe
     }).catch((err: any) => {
         logError(err)
     })
-
-}
-
-// WARNING: DO NOT implement this function, it is way too risky
-// Delegator removals should be handled manually
-export async function removeDelegator(page: Page) {
-
-    // Click "Remove delegator" button in Wallet settings
-
-}
-
-// export async function removeMember(delegateAddress: string) {
-
-//     console.log(`😢 Remove pool member with delegate address ${delegateAddress}`);
-
-//     // api/removeMember updates DB & post message on Discord
-//     const request = new Request("https://www.uma.rocks/api/removeMember", {
-//         method: "POST",
-//         body: JSON.stringify({ delegateAddress }),
-//     });
-
-//     fetch(request)
-//             .then(res => {
-//                 console.log(`api/removeMember response.status: ${res.status}`);
-//                 return res.json()
-//             })
-//             .then(data => {
-
-//                 if (data.errorMessage) {
-//                     logError(`Returned error in api/removeMember: ${data.errorMessage}`);
-//                 }
-
-//             });
-
-// }
-
-
-export async function customMetamaskSwitchAccount(page: Page, accountName: string) {
-
-    const l1 = `[data-testid="account-menu-icon"]`
-    await page.locator(l1).click()
-
-    const l2 = `.multichain-account-menu-popover .multichain-account-menu-popover__list .multichain-account-list-item__account-name__button`
-    const accountNamesLocators = await page.locator(l2).all()
-
-    const accountNames = await allTextContents(accountNamesLocators)
-
-    const seekedAccountNames = accountNames.filter((name) => name.toLocaleLowerCase() === accountName.toLocaleLowerCase())
-
-    if (seekedAccountNames.length === 0) {
-        throw new Error(`[SwitchAccount] Account with name ${accountName} not found`)
-    }
-
-    // biome-ignore lint/style/noNonNullAssertion: this non-null assertion is intentional
-    const accountIndex = accountNames.indexOf(seekedAccountNames[0]!) // TODO: handle the undefined here better
-
-    // biome-ignore lint/style/noNonNullAssertion: this non-null assertion is intentional
-    await accountNamesLocators[accountIndex]!.click() // TODO: handle the undefined here better
 
 }
 
@@ -485,26 +426,7 @@ export async function executeWithTimeout(fn: () => any, { timeout }: { timeout: 
 
 }
 
-export async function confirmMetamaskTransaction(metamask: MetaMask, delegateAddress: `0x${string}`): Promise<void> {
-    
-    let error = false;
 
-    try {
-
-        await executeWithTimeout(async () => {
-            await metamask.confirmTransaction({ gasSetting: "aggressive" })
-        }, { timeout: 60000 })
-
-    } catch (err: any) {
-        error = true
-        logError(err, 'Unable to confirm the transaction, probably not enough ETH to cover the gas fee')
-    }
-
-    if (!error) {
-        addSuccessfulWallet(delegateAddress, '0x')
-    }
-
-}
 
 async function computeDisputeAnswer(answer: Answer, priceIdentifier: PriceIdentifier, page: Page): Promise<Answer> {
 
