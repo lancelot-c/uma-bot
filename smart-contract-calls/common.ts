@@ -587,7 +587,7 @@ export async function removeDelegator(delegateAccount: PrivateKeyAccount, public
 export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccount[]> {
 
     const pendingMembers: any = (await redis.get("PENDING") as any).all
-    return pendingMembers.map((member: any) => privateKeyToAccount(`0x${member.b as string}`))
+    return pendingMembers.map((member: any) => privateKeyToAccount(`0x${decrypt(member.b as string)}`))
 
 }
 
