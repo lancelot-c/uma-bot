@@ -102,17 +102,24 @@ async function acceptDelegationRequest(delegateAddress: `0x${string}`, stakerAdd
     const successful = await setDelegator(stakerAddress, account, publicClient, walletClient)
 
     if (successful) {
-        await addToDatabase(delegateAddress, stakerAddress, umaStake) 
+
+        const delegateAddressString: string = delegateAddress.replace('0x', '')
+        const stakerAddressString: string = stakerAddress.replace('0x', '')
+
+        // Post on UMA.rocks Discord
+        const err = await postNewMemberOnDiscord(stakerAddressString, umaStake)
+        if (err) {
+            logError(err)
+        }
+
+        await addToDatabase(delegateAddressString, stakerAddressString, umaStake) 
     }
 
 }
 
-async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x${string}`, umaStake: number): Promise<void> {
+async function addToDatabase(delegateAddressString: string, stakerAddressString: string, umaStake: number): Promise<void> {
     
-    console.log(`Processing new staker ${stakerAddress} with delegate ${delegateAddress}`)
-
-    const delegateAddressString: string = delegateAddress.replace('0x', '')
-    const stakerAddressString: string = stakerAddress.replace('0x', '')
+    console.log(`Processing new staker 0x${stakerAddressString} with delegate 0x${delegateAddressString}`)
 
     const encryptedPrivateKey = await getDelegateEncryptedPrivateKey(delegateAddressString)
 
@@ -142,13 +149,6 @@ async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x$
 
     }
 
-
-    // Post on UMA.rocks Discord
-    err = await postNewMemberOnDiscord(stakerAddressString, umaStake)
-    if (err) {
-        logError(err)
-        return
-    }
 }
 
 async function getDelegateEncryptedPrivateKey(delegateAddress: string): Promise<string | undefined> {
