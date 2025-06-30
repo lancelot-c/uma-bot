@@ -37,6 +37,7 @@ jobs:
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
