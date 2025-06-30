@@ -445,7 +445,8 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     const discussionTab = page.getByRole('tab', { name: 'Discussion' })
     const discussionLoadedLocator = page.getByLabel('Discussion').locator('div').filter({ hasText: '202' }).first() // hasText: '202' is a nice hack to detect when messages are loaded because messages contains dates like "2025-04-18, 3:36 PM"
     const discussionPanel = page.getByLabel('Discussion').locator('div').filter({ hasText: 'These discussions are from the UMA Protocol Discord' }).first()
-    
+    const joinDiscordDiscussion = page.getByLabel('Join discussion on Discord').last()
+
     console.log(`> Click discussion tab`)
     await discussionTab.click();
 
@@ -464,6 +465,7 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     try {
 
         await discussionPanel.waitFor({ timeout: 10000 })
+        await joinDiscordDiscussion.scrollIntoViewIfNeeded({ timeout: 10000 })
 
         const allMessages = await Promise.all((await discussionPanel.locator('> div').all()).slice(3).slice(0, -1).map(async (m) => await m.textContent() as string))
 
