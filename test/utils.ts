@@ -21,7 +21,7 @@ export type Answer = {
     ancillaryData: `0x${string}`
     question: string
     answer: string
-    skip: boolean
+    skip?: boolean
     force?: boolean // if true, the answer will be committed even if another answer was already committed
 }
 
@@ -132,7 +132,11 @@ export async function postOnDiscord(embedTitle: string, embedColor: number, embe
     console.log('webhookUrl: ', webhookUrl)
 
     const maxFieldsPerEmbed = 25 // see https://birdie0.github.io/discord-webhooks-guide/structure/embed/fields.html
-    const nbEmbeds = embedFields ? Math.ceil(embedFields.length / maxFieldsPerEmbed) : 1
+    let nbEmbeds = 0
+    
+    if (embedFields && embedFields.length > 0) {
+        nbEmbeds = Math.ceil(embedFields.length / maxFieldsPerEmbed)
+    }
 
     let embeds: any[] = [];
 
@@ -317,8 +321,7 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
             let answer: Answer = {
                 ancillaryData: '0x',
                 question: '',
-                answer: '',
-                skip: false
+                answer: ''
             }
 
             console.log(`> Open right panel`)
@@ -402,7 +405,7 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
         //     }
         // }
 
-        console.log(`\n> Answers: ${answers.map((a, i) => `\n#${i}\nQuestion: ${a.question}\nAnswer: ${a.answer}\nSkip: ${a.skip}\n\n`)}`)
+        console.log(`\n> Answers: ${answers.map((a, i) => `\n#${i}\nQuestion: ${a.question}\nAnswer: ${a.answer}\nSkip: ${a.skip}\Force: ${a.force}\n\n`)}`)
 
     }
 
@@ -513,7 +516,9 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     // If nbOccurences = 0, there must have been a problem reading the discussion string
     // for example if the Discord conversation couldn't be loaded
     // and therefore it's better not to vote for anything than voting wrong
-    answer.skip = (nbOccurences == 0)
+    if (nbOccurences == 0) {
+        answer.skip = true
+    }
 
     return answer
 }

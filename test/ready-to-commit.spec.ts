@@ -27,10 +27,8 @@ test(`Get correct answers and post them on Discord`, async ({ page }) => {
                 inline: true
             }
         })
-
-        const content = `📥 *** NEW VOTING ROUND (${answers.length} dispute${answers.length > 1 ? 's' : ''})***`
         
-        await postOnDiscord("READY TO COMMIT 👌", 4626987, embedDescription, embedFields, content)
+        await postOnDiscord("READY TO COMMIT 👌", 4626987, embedDescription, embedFields)
         
         // if (process.env.ATTEMPT_DISCORD_LOGIN === "true") {
         //     postOnUmaDiscord(page, answers)

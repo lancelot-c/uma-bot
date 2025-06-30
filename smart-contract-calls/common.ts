@@ -495,8 +495,8 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
             continue;
         }
 
-        if (answer.skip === undefined || answer.skip === true) {
-            logError(`Skip is undefined or Skip = true for request ${i + 1}`)
+        if (answer.skip === true) {
+            logError(`Skip = true for request ${i + 1}`)
             continue;
         }
 
@@ -717,7 +717,7 @@ export async function getAnswers(): Promise<Answer[] | undefined> {
 
         const a = answersFile[i]
 
-        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('question') || !a.hasOwnProperty('answer') || !a.hasOwnProperty('skip')) {
+        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('question') || !a.hasOwnProperty('answer')) {
             return undefined
         }
     }

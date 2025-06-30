@@ -19,6 +19,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref }}
+        path: uma-bot
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -37,6 +38,53 @@ jobs:
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+
+
+
+
+
+    - name: Checkout uma-answers repo
+      uses: actions/checkout@v4
+      with:
+        repository: lancelot-c/uma-answers
+        ref: answers # branch
+        path: uma-answers
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+
+
+    - name: Commit and push changes (if any)
+      shell: bash
+      env:
+        CI_COMMIT_MESSAGE: update answers.json
+        CI_COMMIT_AUTHOR: github-actions[bot]
+        CI_COMMIT_EMAIL: lancelot-c@users.noreply.github.com
+      run: |
+        cd uma-answers
+        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
+        if [[ `git status --porcelain --untracked-files=no` ]]; then
+            # Changes
+            git add test-data/answers.json
+            git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
+            git push
+        else
+            # No changes
+            echo "no changes to answers.json"
+            exit 0
+        fi
+
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v7
+    #   with:
+    #     token: ${{ secrets.UMA_ANSWERS_REPO_ACCESS_TOKEN }}
+    #     title: 'Answers for voting round X'
+    #     body: 'Conversation for voting round X'
+    #     branch: 'main'
+    #     base: 'main'
+    #     draft: false
+    #     add-paths: |
+    #         test-data/answers.json
+
 
     - name: Cancel job if not reveal phase
       continue-on-error: false # Make sure we stop the job if this script fails
