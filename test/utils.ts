@@ -213,15 +213,16 @@ export const getDirectories = async (source: string) => (await readdir(source, {
 
 
 
-export async function saveAnswers(answers: Answer[]): Promise<boolean> {
+export async function saveAnswers(answers: Answer[], votingRound?: number): Promise<boolean> {
 
     let customResolve: (value: boolean) => void;
     const customPromise = new Promise<boolean>((resolve, reject) => {
         customResolve = resolve
     });
     
+    const fileName = votingRound ? `voting-round-${votingRound}.json` : 'answers.json'
 
-    fs.writeFile('./uma-bot/test-data/answers.json', JSON.stringify(answers), (error: any) => {
+    fs.writeFile(`./uma-bot/test-data/${fileName}`, JSON.stringify(answers, undefined, 4), (error: any) => {
         if (error) {
             customResolve(false)
             logError(error)

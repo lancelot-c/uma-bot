@@ -136,4 +136,5 @@ jobs:
       with:
         # Optional. Commit message for the created commit.
         # Defaults to "Apply automatic changes"
+        repository: ./uma-bot
         commit_message: Automated report

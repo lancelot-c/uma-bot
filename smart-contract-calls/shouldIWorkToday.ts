@@ -41,6 +41,8 @@ if (true) {
         
     })
 
-    await saveAnswers(answers)
+    const votingRound = requests[0].lastVotingRound
+
+    await saveAnswers(answers, votingRound)
 
 }
