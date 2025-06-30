@@ -64,7 +64,7 @@ jobs:
         git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
         if [[ `git status` ]]; then
             # Changes
-            git add ./uma-bot/test-data/answers.json
+            git add ./../uma-bot/test-data/answers.json
             git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
             git push
         else
