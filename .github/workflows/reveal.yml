@@ -26,7 +26,7 @@ jobs:
 
 
     - name: Install dependencies # because isRevealPhase needs viem
-      run: npm install
+      run: cd uma-bot && npm install
     - name: Install tsx globally to run ts files independently
       run: npm i -g tsx
 
