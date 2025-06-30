@@ -132,9 +132,11 @@ jobs:
     #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
     #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
-    - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
-      with:
-        # Optional. Commit message for the created commit.
-        # Defaults to "Apply automatic changes"
-        repository: ./uma-bot
-        commit_message: Automated report
+
+    
+    # - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
+    #   with:
+    #     # Optional. Commit message for the created commit.
+    #     # Defaults to "Apply automatic changes"
+    #     repository: ./uma-bot
+    #     commit_message: Automated report
