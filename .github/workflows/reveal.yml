@@ -62,7 +62,7 @@ jobs:
         cd uma-answers
         git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
         git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
-        if [[ `git status --porcelain --untracked-files=no` ]]; then
+        if [[ `git status` ]]; then
             # Changes
             git add test-data/answers.json
             git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
