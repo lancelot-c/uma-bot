@@ -16,13 +16,23 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+    
+    - name: Checkout uma-bot repo
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref }}
         path: uma-bot
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+
+    - name: Checkout uma-answers repo
+      uses: actions/checkout@v4
+      with:
+        repository: lancelot-c/uma-answers
+        ref: answers # branch
+        path: uma-answers
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
     - name: Install dependencies # because isRevealPhase needs viem
@@ -40,17 +50,6 @@ jobs:
         DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
-
-
-
-
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        ref: answers # branch
-        path: uma-answers
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
     - name: Commit and push changes (if any)
@@ -87,38 +86,38 @@ jobs:
     #         test-data/answers.json
 
 
-    - name: Cancel job if not reveal phase
-      continue-on-error: false # Make sure we stop the job if this script fails
-      run: tsx ./uma-bot/smart-contract-calls/isRevealPhase.ts
-      env:
-        RPC_URL: ${{ secrets.RPC_URL }}
-        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
+    # - name: Cancel job if not reveal phase
+    #   continue-on-error: false # Make sure we stop the job if this script fails
+    #   run: tsx ./uma-bot/smart-contract-calls/isRevealPhase.ts
+    #   env:
+    #     RPC_URL: ${{ secrets.RPC_URL }}
+    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
 
     #V2
-    - name: Reveal V2
-      continue-on-error: true
-      run: tsx ./uma-bot/smart-contract-calls/reveal.ts
-      env:
-        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-        RPC_URL: ${{ secrets.RPC_URL }}
-        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+    # - name: Reveal V2
+    #   continue-on-error: true
+    #   run: tsx ./uma-bot/smart-contract-calls/reveal.ts
+    #   env:
+    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+    #     RPC_URL: ${{ secrets.RPC_URL }}
+    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
 
-    - name: Post summary on Discord
-      continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx ./uma-bot/smart-contract-calls/summary.ts
-      env: # Set the secret as an environment variable
-        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-        RPC_URL: ${{ secrets.RPC_URL }}
-        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
-        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+    # - name: Post summary on Discord
+    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
+    #   run: tsx ./uma-bot/smart-contract-calls/summary.ts
+    #   env: # Set the secret as an environment variable
+    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+    #     RPC_URL: ${{ secrets.RPC_URL }}
+    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
     - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
       with:
