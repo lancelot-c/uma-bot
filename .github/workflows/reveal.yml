@@ -26,13 +26,13 @@ jobs:
       with:
         node-version: lts/*
 
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        ref: answers # branch
-        path: uma-answers
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
+    # - name: Checkout uma-answers repo
+    #   uses: actions/checkout@v4
+    #   with:
+    #     repository: lancelot-c/uma-answers
+    #     ref: answers # branch
+    #     path: uma-answers
+    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
     - name: Install dependencies # because isRevealPhase needs viem
@@ -52,26 +52,39 @@ jobs:
 
 
 
-    - name: Commit and push changes (if any)
-      shell: bash
+    - name: Pushes answers.json file
+      uses: dmnemec/copy_file_to_another_repo_action@main
       env:
-        CI_COMMIT_MESSAGE: update answers.json
-        CI_COMMIT_AUTHOR: github-actions[bot]
-        CI_COMMIT_EMAIL: lancelot-c@users.noreply.github.com
-      run: |
-        cd uma-answers
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
-        if [[ `git status` ]]; then
-            # Changes
-            git add ./../uma-bot/test-data/answers.json
-            git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
-            git push
-        else
-            # No changes
-            echo "no changes to answers.json"
-            exit 0
-        fi
+        API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+      with:
+        source_file: 'test-data/answers.json'
+        destination_repo: 'lancelot-c/uma-answers'
+        destination_branch: 'answers'
+        user_email: 'lancelot-c@users.noreply.github.com'
+        user_name: 'uma-bot'
+        commit_message: 'Fresh answers.json for the new voting round'
+
+
+    # - name: Commit and push changes (if any)
+    #   shell: bash
+    #   env:
+    #     CI_COMMIT_MESSAGE: update answers.json
+    #     CI_COMMIT_AUTHOR: github-actions[bot]
+    #     CI_COMMIT_EMAIL: lancelot-c@users.noreply.github.com
+    #   run: |
+    #     cd uma-answers
+    #     git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+    #     git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
+    #     if [[ `git status` ]]; then
+    #         # Changes
+    #         git add test-data/answers.json
+    #         git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
+    #         git push
+    #     else
+    #         # No changes
+    #         echo "no changes to answers.json"
+    #         exit 0
+    #     fi
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v7
