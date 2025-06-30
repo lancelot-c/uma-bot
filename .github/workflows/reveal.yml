@@ -34,8 +34,6 @@ jobs:
       continue-on-error: true # Make sure we continue the job if this script fails
       run: tsx smart-contract-calls/shouldIWorkToday.ts
       env:
-        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
@@ -44,8 +42,6 @@ jobs:
       continue-on-error: false # Make sure we stop the job if this script fails
       run: tsx smart-contract-calls/isRevealPhase.ts
       env:
-        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         RPC_URL: ${{ secrets.RPC_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
 
@@ -55,8 +51,6 @@ jobs:
       run: tsx smart-contract-calls/reveal.ts
       env:
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
         UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
@@ -69,8 +63,6 @@ jobs:
       run: tsx smart-contract-calls/summary.ts
       env: # Set the secret as an environment variable
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-        ALCHEMY_BASE_URL: ${{ secrets.ALCHEMY_BASE_URL }}
-        ALCHEMY_API_KEY: ${{ secrets.ALCHEMY_API_KEY }}
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
         UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
