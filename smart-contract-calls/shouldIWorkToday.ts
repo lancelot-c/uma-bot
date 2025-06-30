@@ -18,7 +18,7 @@ if (true) {
     // Post in #history channel
     const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](https://github.com/lancelot-c/uma-answers) by the UMA.rocks multisig owners, feel free to join the conversation there.`
     
-    await postOnDiscord('', 0, '', [], content)
+    // await postOnDiscord('', 0, '', [], content)
 
     // Create fresh answers.json
     let answers: Answer[] = []

@@ -221,7 +221,7 @@ export async function saveAnswers(answers: Answer[]): Promise<boolean> {
     });
     
 
-    fs.writeFile('test-data/answers.json', JSON.stringify(answers), (error: any) => {
+    fs.writeFile('./uma-bot/test-data/answers.json', JSON.stringify(answers), (error: any) => {
         if (error) {
             customResolve(false)
             logError(error)

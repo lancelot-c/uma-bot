@@ -89,7 +89,7 @@ jobs:
 
     - name: Cancel job if not reveal phase
       continue-on-error: false # Make sure we stop the job if this script fails
-      run: tsx smart-contract-calls/isRevealPhase.ts
+      run: tsx ./uma-bot/smart-contract-calls/isRevealPhase.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
@@ -97,7 +97,7 @@ jobs:
     #V2
     - name: Reveal V2
       continue-on-error: true
-      run: tsx smart-contract-calls/reveal.ts
+      run: tsx ./uma-bot/smart-contract-calls/reveal.ts
       env:
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
@@ -109,7 +109,7 @@ jobs:
 
     - name: Post summary on Discord
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx smart-contract-calls/summary.ts
+      run: tsx ./uma-bot/smart-contract-calls/summary.ts
       env: # Set the secret as an environment variable
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
