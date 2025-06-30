@@ -57,7 +57,7 @@ jobs:
       env:
         API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
       with:
-        source_file: 'test-data/answers.json'
+        source_file: './uma-bot/test-data/answers.json'
         destination_repo: 'lancelot-c/uma-answers'
         destination_branch: 'answers'
         user_email: 'lancelot-c@users.noreply.github.com'
