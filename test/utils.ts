@@ -222,7 +222,7 @@ export async function saveAnswers(answers: Answer[], votingRound?: number): Prom
     
     const fileName = votingRound ? `voting-round-${votingRound}.json` : 'answers.json'
 
-    fs.writeFile(`./uma-bot/test-data/${fileName}`, JSON.stringify(answers, undefined, 4), (error: any) => {
+    fs.writeFile(`./test-data/${fileName}`, JSON.stringify(answers, undefined, 4), (error: any) => {
         if (error) {
             customResolve(false)
             logError(error)

@@ -43,7 +43,7 @@ jobs:
     # Notify the UMA.rocks team if anything needs to be done today
     - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
       continue-on-error: true # Make sure we continue the job if this script fails
-      run: tsx ./uma-bot/smart-contract-calls/shouldIWorkToday.ts
+      run: cd uma-bot && tsx ./smart-contract-calls/shouldIWorkToday.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
@@ -133,7 +133,7 @@ jobs:
     #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    
+
     # - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
     #   with:
     #     # Optional. Commit message for the created commit.
