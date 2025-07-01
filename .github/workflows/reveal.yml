@@ -55,7 +55,7 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
     - name: log revealed value
-      run: echo "${{ steps.reveal.outputs.revelead }}
+      run: echo "${{ steps.reveal.outputs.revelead }}"
 
     # - name: Post summary on Discord
     #   if: steps.reveal.outputs.revelead == '1'
