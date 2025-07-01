@@ -469,7 +469,6 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     try {
 
         await discussionPanel.waitFor({ timeout: 10000 })
-        await joinDiscordDiscussion.scrollIntoViewIfNeeded({ timeout: 10000 })
 
         const allMessages = await Promise.all((await discussionPanel.locator('> div').all()).slice(3).slice(0, -1).map(async (m) => await m.textContent() as string))
 
