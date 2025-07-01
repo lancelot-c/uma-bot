@@ -39,10 +39,10 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
     - name: Install Playwright Browsers
-      run: npx playwright install --with-deps chromium
+      run: cd uma-bot && npx playwright install --with-deps chromium
     - name: Run Playwright test ready-to-commit.spec.ts
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: xvfb-run npx playwright test ./uma-bot/test/ready-to-commit.spec.ts
+      run: cd uma-bot && xvfb-run npx playwright test ./test/ready-to-commit.spec.ts
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
