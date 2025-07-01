@@ -16,9 +16,12 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+
+    - name: Checkout uma-bot repo
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref }}
+        path: uma-bot
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
@@ -30,7 +33,7 @@ jobs:
 
     - name: Cancel job if not commit phase
       continue-on-error: false # Make sure we stop the job if this script fails
-      run: tsx smart-contract-calls/isCommitPhase.ts
+      run: tsx ./uma-bot/smart-contract-calls/isCommitPhase.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
@@ -38,7 +41,7 @@ jobs:
     #V2
     - name: Commit V2
       continue-on-error: true
-      run: tsx smart-contract-calls/commit.ts
+      run: tsx ./uma-bot/smart-contract-calls/commit.ts
       env:
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
@@ -49,7 +52,7 @@ jobs:
 
     - name: Post summary on Discord
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx smart-contract-calls/summary.ts
+      run: tsx ./uma-bot/smart-contract-calls/summary.ts
       env: # Set the secret as an environment variable
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}

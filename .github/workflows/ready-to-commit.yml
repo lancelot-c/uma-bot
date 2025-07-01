@@ -16,12 +16,16 @@ jobs:
       contents: write
 
     steps:
-    - uses: actions/checkout@v4
+
+    - name: Checkout uma-bot repo
+      uses: actions/checkout@v4
       with:
         ref: ${{ github.head_ref }}
+        path: uma-bot
     - uses: actions/setup-node@v4
       with:
         node-version: lts/*
+
     - name: Install dependencies # because isCommitPhase needs viem
       run: npm install
     - name: Install tsx globally to run ts files independently
@@ -29,7 +33,7 @@ jobs:
 
     - name: Cancel job if not commit phase
       continue-on-error: false # Make sure we stop the job if this script fails
-      run: tsx smart-contract-calls/isCommitPhase.ts
+      run: tsx ./uma-bot/smart-contract-calls/isCommitPhase.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
@@ -38,7 +42,7 @@ jobs:
       run: npx playwright install --with-deps chromium
     - name: Run Playwright test ready-to-commit.spec.ts
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: xvfb-run npx playwright test test/ready-to-commit.spec.ts
+      run: xvfb-run npx playwright test ./uma-bot/test/ready-to-commit.spec.ts
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
@@ -55,7 +59,7 @@ jobs:
 
     - name: Remove invalid delegators
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx smart-contract-calls/validate-delegators.ts
+      run: tsx ./uma-bot/smart-contract-calls/validate-delegators.ts
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
@@ -71,7 +75,7 @@ jobs:
 
     - name: Accept new delegation requests
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx smart-contract-calls/accept-delegators.ts
+      run: tsx ./uma-bot/smart-contract-calls/accept-delegators.ts
       # run: xvfb-run npx playwright test test/accept-join-requests.spec.ts
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
