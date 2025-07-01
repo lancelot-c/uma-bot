@@ -27,7 +27,7 @@ jobs:
         node-version: lts/*
 
     - name: Install dependencies # because isCommitPhase needs viem
-      run: npm install
+      run: cd uma-bot && npm install
     - name: Install tsx globally to run ts files independently
       run: npm i -g tsx
 
