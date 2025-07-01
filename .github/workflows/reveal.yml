@@ -40,29 +40,61 @@ jobs:
     - name: Install tsx globally to run ts files independently
       run: npm i -g tsx
 
-    # Notify the UMA.rocks team if anything needs to be done today
-    - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
-      continue-on-error: true # Make sure we continue the job if this script fails
-      run: cd uma-bot && tsx ./smart-contract-calls/shouldIWorkToday.ts
+
+    #V2
+    - name: Reveal
+      id: reveal
+      continue-on-error: true
+      run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
       env:
+        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+
+
+    # - name: Post summary on Discord
+    #   if: steps.reveal.outputs.revelead == '1'
+    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
+    #   run: tsx ./uma-bot/smart-contract-calls/summary.ts
+    #   env: # Set the secret as an environment variable
+    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+    #     RPC_URL: ${{ secrets.RPC_URL }}
+    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
 
-    - name: Pushes answers.json file
-      uses: dmnemec/copy_file_to_another_repo_action@main
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
-      with:
-        source_file: './uma-bot/test-data/answers.json'
-        destination_repo: 'lancelot-c/uma-answers'
-        destination_branch: 'answers'
-        user_email: 'lancelot-c@users.noreply.github.com'
-        user_name: 'uma-bot'
-        commit_message: 'Fresh answers.json for the new voting round'
+
+    # Notify the UMA.rocks team if anything needs to be done today
+    # - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
+    #   continue-on-error: true # Make sure we continue the job if this script fails
+    #   run: cd uma-bot && tsx ./smart-contract-calls/shouldIWorkToday.ts
+    #   env:
+    #     RPC_URL: ${{ secrets.RPC_URL }}
+    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+
+
+
+    # - name: Pushes answers.json file
+    #   uses: dmnemec/copy_file_to_another_repo_action@main
+    #   env:
+    #     API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+    #   with:
+    #     source_file: './uma-bot/test-data/answers.json'
+    #     destination_repo: 'lancelot-c/uma-answers'
+    #     destination_branch: 'answers'
+    #     user_email: 'lancelot-c@users.noreply.github.com'
+    #     user_name: 'uma-bot'
+    #     commit_message: 'Fresh answers.json for the new voting round'
 
 
     # - name: Commit and push changes (if any)
@@ -106,31 +138,7 @@ jobs:
     #     RPC_URL: ${{ secrets.RPC_URL }}
     #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}     
 
-    #V2
-    # - name: Reveal V2
-    #   continue-on-error: true
-    #   run: tsx ./uma-bot/smart-contract-calls/reveal.ts
-    #   env:
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
-
-    # - name: Post summary on Discord
-    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
-    #   run: tsx ./uma-bot/smart-contract-calls/summary.ts
-    #   env: # Set the secret as an environment variable
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
 
