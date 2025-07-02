@@ -474,7 +474,7 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
     const votingRound = requests[0].lastVotingRound
     const answers = await getAnswers(votingRound)
     if (answers === undefined) {
-        logError(`No answer detected in answers.json`)
+        logError(`No answer detected in answers file`)
         return []
     }
 
@@ -707,7 +707,7 @@ export async function getAnswers(votingRound: number): Promise<Answer[] | undefi
     
     let answersFile  = ''
 
-    fetch(answersFileUrl)
+    await fetch(answersFileUrl)
         .then(response => response.json())
         .then(json => {
             answersFile = json
