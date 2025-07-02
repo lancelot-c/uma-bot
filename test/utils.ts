@@ -19,7 +19,7 @@ export const SEED_PHRASE_OFFSET = 13
 
 export type Answer = {
     ancillaryData: `0x${string}`
-    question: string
+    question?: string
     answer: string
     skip?: boolean
     force?: boolean // if true, the answer will be committed even if another answer was already committed
@@ -220,7 +220,7 @@ export async function saveAnswers(answers: Answer[], votingRound?: number): Prom
         customResolve = resolve
     });
     
-    const fileName = votingRound ? `voting-round-${votingRound}.json` : 'answers.json'
+    const fileName = votingRound ? `${votingRound}.json` : 'answers.json'
 
     fs.writeFile(`./test-data/${fileName}`, JSON.stringify(answers, undefined, 4), (error: any) => {
         if (error) {
