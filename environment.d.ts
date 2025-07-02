@@ -9,6 +9,7 @@ declare global {
             ATTEMPT_DISCORD_LOGIN: string
             UPSTASH_API_KEY: string
             RPC_URL: string
+            GITHUB_OUTPUT: string
         }
     }
 }

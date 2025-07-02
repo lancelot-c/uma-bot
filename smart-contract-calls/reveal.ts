@@ -2,9 +2,12 @@ import { encodeFunctionData, PrivateKeyAccount } from 'viem'
 import { umaContractAbi } from './../test/umaAbi'
 import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteRevealedEvent, voteCommittedEvent, umaRocksAlreadyDidSomething } from './common'
 import { addFailedWallet, addSkippedWallet, addSuccessfulWallet } from '../test/utils'
+import fs from 'fs'
+import 'dotenv/config'
 
 const returnValue = await run()
-process.stdout.write(returnValue)
+// process.stdout.write(returnValue)
+process.env.GITHUB_OUTPUT += `revelead=${returnValue}\n`
 
 async function run(): Promise<string> {
 

@@ -37,7 +37,8 @@ jobs:
     - name: Reveal
       id: reveal
       continue-on-error: true
-      run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
+      run: tsx ./uma-bot/smart-contract-calls/reveal.ts
+      # run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
       env:
         PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
