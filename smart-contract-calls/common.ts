@@ -703,24 +703,27 @@ export function umaRocksAlreadyDidSomething(eventSummaries: EventSummary[]): boo
 
 export async function getAnswers(votingRound: number): Promise<Answer[] | undefined> {
 
-    console.log(`fetch answers for votingRound = ${votingRound}`)
     const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/answers/voting-rounds/${votingRound}.json`
     
-    let answersFile: any;
+    let answersFile;
 
-    await fetch(answersFileUrl)
-        .then(response => response.json())
-        .then(json => {
-            console.log(json)
-            answersFile = json
-        })
-        .catch(err => {
-            logError(err)
+    try {
+
+        const response = await fetch(answersFileUrl);
+        if (!response.ok) {
+            logError(`Response status: ${response.status}`);
             return undefined
-        });
+        }
+    
+        answersFile = await response.json();
+        
+        console.log('Content of answers file')
+        console.log(answersFile)
 
-    console.log('Content of answers file')
-    console.log(answersFile)
+    } catch (error: any) {
+        logError(error.message);
+        return undefined
+    }
 
     if (!Array.isArray(answersFile) || answersFile.length == 0) {
         return undefined
