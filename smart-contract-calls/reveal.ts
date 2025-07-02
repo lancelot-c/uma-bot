@@ -11,6 +11,9 @@ console.log(process.env.GITHUB_OUTPUT as string)
 
 process.env.GITHUB_OUTPUT += `revelead=${returnValue}\n`
 
+console.log(`process.env.GITHUB_OUTPUT =`)
+console.log(process.env.GITHUB_OUTPUT as string)
+
 
 
 async function run(): Promise<string> {
@@ -42,7 +45,7 @@ async function run(): Promise<string> {
     const nbDisputes = requests.length
 
     // Reveal votes for all wallets
-    await takeActionForAccounts(revealForAccount, delegateAccounts)
+    // await takeActionForAccounts(revealForAccount, delegateAccounts)
     return '1'
 
 
