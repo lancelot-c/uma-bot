@@ -6,16 +6,10 @@ import fs from 'fs'
 import 'dotenv/config'
 
 const returnValue = await run()
-// process.stdout.write(returnValue)
-// console.log(process.env.GITHUB_OUTPUT as string)
-
-// process.env.GITHUB_OUTPUT += `revelead=${returnValue}\n`
-
-// console.log(`process.env.GITHUB_OUTPUT =`)
 fs.appendFileSync(process.env.GITHUB_OUTPUT as string, `revelead=${returnValue}\n`)
 
-const githubOutputData = fs.readFileSync(process.env.GITHUB_OUTPUT as string, { encoding: 'utf8', flag: 'r' });
-console.log(githubOutputData);
+// const githubOutputData = fs.readFileSync(process.env.GITHUB_OUTPUT as string, { encoding: 'utf8', flag: 'r' });
+// console.log(githubOutputData);
 
 
 async function run(): Promise<string> {
@@ -47,7 +41,7 @@ async function run(): Promise<string> {
     const nbDisputes = requests.length
 
     // Reveal votes for all wallets
-    // await takeActionForAccounts(revealForAccount, delegateAccounts)
+    await takeActionForAccounts(revealForAccount, delegateAccounts)
     return '1'
 
 

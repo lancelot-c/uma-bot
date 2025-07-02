@@ -703,7 +703,7 @@ export function umaRocksAlreadyDidSomething(eventSummaries: EventSummary[]): boo
 
 export async function getAnswers(votingRound: number): Promise<Answer[] | undefined> {
 
-    const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/answers/voting-rounds/${votingRound}.json`
+    const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/main/voting-rounds/${votingRound}.json`
     console.log(`Fetching answers from ${answersFileUrl}`)
 
     let answersFile;
