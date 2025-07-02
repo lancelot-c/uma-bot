@@ -703,14 +703,20 @@ export function umaRocksAlreadyDidSomething(eventSummaries: EventSummary[]): boo
 
 export async function getAnswers(votingRound: number): Promise<Answer[] | undefined> {
 
+    console.log(`fetch answers for votingRound = ${votingRound}`)
     const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/answers/voting-rounds/${votingRound}.json`
     
-    let answersFile  = ''
+    let answersFile: any;
 
     await fetch(answersFileUrl)
         .then(response => response.json())
         .then(json => {
+            console.log(json)
             answersFile = json
+        })
+        .catch(err => {
+            logError(err)
+            return undefined
         });
 
     console.log('Content of answers file')
