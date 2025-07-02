@@ -705,9 +705,13 @@ export async function getAnswers(votingRound: number): Promise<Answer[] | undefi
 
     const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/answers/voting-rounds/${votingRound}.json`
     
-    const { default: answersFile } = await import(answersFileUrl, {
-        with: { type: "json" },
-    });
+    let answersFile  = ''
+
+    fetch(answersFileUrl)
+        .then(response => response.json())
+        .then(json => {
+            answersFile = json
+        });
 
     console.log('Content of answers file')
     console.log(answersFile)
