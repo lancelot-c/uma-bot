@@ -471,7 +471,8 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
         return []
     }
 
-    const answers = await getAnswers()
+    const votingRound = requests[0].lastVotingRound
+    const answers = await getAnswers(votingRound)
     if (answers === undefined) {
         logError(`No answer detected in answers.json`)
         return []
@@ -700,13 +701,15 @@ export function umaRocksAlreadyDidSomething(eventSummaries: EventSummary[]): boo
 }
 
 
-export async function getAnswers(): Promise<Answer[] | undefined> {
+export async function getAnswers(votingRound: number): Promise<Answer[] | undefined> {
 
-    const { default: answersFile } = await import("../test-data/answers.json", {
+    const answersFileUrl = `https://raw.githubusercontent.com/lancelot-c/uma-answers/refs/heads/answers/voting-rounds/${votingRound}.json`
+    
+    const { default: answersFile } = await import(answersFileUrl, {
         with: { type: "json" },
     });
 
-    console.log('Content of ./../test-data/answers.json')
+    console.log('Content of answers file')
     console.log(answersFile)
 
     if (!Array.isArray(answersFile) || answersFile.length == 0) {
@@ -717,7 +720,7 @@ export async function getAnswers(): Promise<Answer[] | undefined> {
 
         const a = answersFile[i]
 
-        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('question') || !a.hasOwnProperty('answer')) {
+        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('answer')) {
             return undefined
         }
     }

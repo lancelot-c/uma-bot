@@ -46,9 +46,6 @@ jobs:
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
-    - name: log revealed value
-      run: echo "${{ steps.reveal.outputs.revelead }}"
-
     - name: Post summary on Discord
       if: steps.reveal.outputs.revelead == '1'
       continue-on-error: true # See https://stackoverflow.com/a/70048004
