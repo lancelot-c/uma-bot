@@ -7,7 +7,11 @@ import 'dotenv/config'
 
 const returnValue = await run()
 // process.stdout.write(returnValue)
+console.log(process.env.GITHUB_OUTPUT as string)
+
 process.env.GITHUB_OUTPUT += `revelead=${returnValue}\n`
+
+
 
 async function run(): Promise<string> {
 
