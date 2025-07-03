@@ -75,42 +75,43 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    - name: Pushes answers file
+    # - name: Pushes answers file
+    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+    #   uses: dmnemec/copy_file_to_another_repo_action@main
+    #   env:
+    #     API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+    #   with:
+    #     source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
+    #     destination_repo: 'lancelot-c/uma-answers'
+    #     destination_branch: 'answers'
+    #     destination_folder: 'voting-rounds'
+    #     user_email: 'lancelot-c@users.noreply.github.com'
+    #     user_name: 'uma-bot'
+    #     commit_message: 'Fresh answer file for the new voting round'
+
+
+
+    - name: Checkout uma-answers repo
       if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-      uses: dmnemec/copy_file_to_another_repo_action@main
-      env:
-        API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+      uses: actions/checkout@v4
       with:
-        source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
-        destination_repo: 'lancelot-c/uma-answers'
-        destination_branch: 'answers'
-        destination_folder: 'voting-rounds'
-        user_email: 'lancelot-c@users.noreply.github.com'
-        user_name: 'uma-bot'
-        commit_message: 'Fresh answer file for the new voting round'
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+        repository: lancelot-c/uma-answers
+        ref: answers # branch
+        path: uma-answers
 
 
-
-    # - name: Checkout uma-answers repo
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: actions/checkout@v4
-    #   with:
-    #     repository: lancelot-c/uma-answers
-    #     # ref: answers # branch
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-
-
-    # - name: Create Pull Request
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: peter-evans/create-pull-request@v7
-    #   with:
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-    #     title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
-    #     body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
-    #     # path: ./uma-answers/
-    #     branch: 'answers'
-    #     base: 'main'
-    #     draft: false
+    - name: Create Pull Request
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+        title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+        body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
+        path: uma-answers
+        branch: 'answers'
+        base: 'main'
+        draft: false
 
 
    
