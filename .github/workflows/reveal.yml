@@ -75,19 +75,19 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    # - name: Pushes answers file
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: dmnemec/copy_file_to_another_repo_action@main
-    #   env:
-    #     API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
-    #   with:
-    #     source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
-    #     destination_repo: 'lancelot-c/uma-answers'
-    #     destination_branch: 'answers'
-    #     destination_folder: 'voting-rounds'
-    #     user_email: 'lancelot-c@users.noreply.github.com'
-    #     user_name: 'uma-bot'
-    #     commit_message: 'Fresh answer file for the new voting round'
+    - name: Pushes answers file
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      uses: dmnemec/copy_file_to_another_repo_action@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+      with:
+        source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
+        destination_repo: 'lancelot-c/uma-answers'
+        destination_branch: 'answers'
+        destination_folder: 'voting-rounds'
+        user_email: 'lancelot-c@users.noreply.github.com'
+        user_name: 'uma-bot'
+        commit_message: 'Fresh answer file for the new voting round'
 
 
 
@@ -97,7 +97,7 @@ jobs:
       with:
         token: ${{ secrets.GH_ACCESS_TOKEN }}
         repository: lancelot-c/uma-answers
-        ref: answers # branch
+        ref: origin/answers # branch
         path: uma-answers
 
 
