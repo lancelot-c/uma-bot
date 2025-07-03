@@ -91,24 +91,26 @@ jobs:
 
 
 
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        # ref: answers # branch
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
+    # - name: Checkout uma-answers repo
+    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+    #   uses: actions/checkout@v4
+    #   with:
+    #     repository: lancelot-c/uma-answers
+    #     # ref: answers # branch
+    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
-    - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v7
-      with:
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
-        title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
-        body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
-        # path: ./uma-answers/
-        branch: 'answers'
-        base: 'main'
-        draft: false
+    # - name: Create Pull Request
+    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+    #   uses: peter-evans/create-pull-request@v7
+    #   with:
+    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
+    #     title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+    #     body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
+    #     # path: ./uma-answers/
+    #     branch: 'answers'
+    #     base: 'main'
+    #     draft: false
 
 
    
