@@ -9,7 +9,7 @@
 
 
 
-👉 New answers are published everyday at 11AM UTC in `test-data/answers.json`
+👉 Answers fetched from the [UMA.rocks multisig repository](https://github.com/lancelot-c/uma-answers)
 
 ## Get involved
 👨‍💻 Contribute by opening pull requests
