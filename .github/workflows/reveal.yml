@@ -97,10 +97,7 @@ jobs:
       with:
         token: ${{ secrets.GH_ACCESS_TOKEN }}
         repository: lancelot-c/uma-answers
-        # ref: answers # branch
-        # path: uma-answers
-    - run: |
-        git checkout answers
+        ref: answers
 
 
     - name: Create Pull Request

@@ -38,7 +38,7 @@ jobs:
         RPC_URL: ${{ secrets.RPC_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
-    #V2
+        
     - name: Commit
       continue-on-error: true
       run: tsx ./uma-bot/smart-contract-calls/commit.ts
