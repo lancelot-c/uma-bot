@@ -2,6 +2,7 @@ import { testWithSynpress } from '@synthetixio/synpress'
 import { ethereumWalletMockFixtures } from '@synthetixio/synpress/playwright'
 import { scrapAnswers, postOnDiscord, saveAnswers } from './utils'
 import 'dotenv/config'
+import { getAnswers } from '../smart-contract-calls/common'
 
 const test = testWithSynpress(ethereumWalletMockFixtures)
 // const { expect } = test
@@ -12,7 +13,13 @@ test(`Get correct answers and post them on Discord`, async ({ page }) => {
     // Let 10 minutes for the test to complete, fails otherwise
     test.setTimeout(10 * 60 * 1000);
 
-    const [commitPhaseOpen, revealPhaseOpen, answers] = await scrapAnswers(page)
+    // const [commitPhaseOpen, revealPhaseOpen, answers] = await scrapAnswers(page)
+    const commitPhaseOpen = true
+    const answers = await getAnswers(10135)
+
+    if (!answers) {
+        return
+    }
 
     // Is open for commiting votes
     if (commitPhaseOpen) {
@@ -35,7 +42,7 @@ test(`Get correct answers and post them on Discord`, async ({ page }) => {
         // }
         
         // Write answers in json file
-        await saveAnswers(answers)
+        // await saveAnswers(answers)
         
     }
 
