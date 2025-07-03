@@ -27,6 +27,14 @@ jobs:
       with:
         node-version: lts/*
 
+    - name: Checkout uma-answers repo
+      uses: actions/checkout@v4
+      with:
+        repository: lancelot-c/uma-answers
+        ref: answers # branch
+        path: uma-answers
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+
 
     - name: Install dependencies # because isRevealPhase needs viem
       run: cd uma-bot && npm install
@@ -90,13 +98,7 @@ jobs:
         commit_message: 'Fresh answer file for the new voting round'
 
 
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        ref: answers # branch
-        path: uma-answers
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
+
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
