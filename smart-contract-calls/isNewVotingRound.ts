@@ -18,14 +18,17 @@ async function run(): Promise<string> {
     if (shouldCommitToday) {
 
         const pluralString = requests.length > 1 ? 's' : ''
+        const votingRound = requests[0].lastVotingRound
+        const offsetVotingRound = 10135
+        const pullRequestNumber = votingRound - offsetVotingRound
 
         // Post in #dev channel
         await logInfo(`${requests.length} answer${pluralString} to find today`)
 
         // Post in #history channel
-        const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](<https://github.com/lancelot-c/uma-answers>) by the UMA.rocks multisig owners, feel free to join the conversation there.`
+        const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) by the UMA.rocks multisig owners, feel free to join the conversation there.`
         
-        // await postOnDiscord('', 0, '', [], content)
+        await postOnDiscord('', 0, '', [], content)
 
         // Create fresh answers.json
         let answers: Answer[] = []
@@ -47,8 +50,6 @@ async function run(): Promise<string> {
             })
             
         })
-
-        const votingRound = requests[0].lastVotingRound
 
         await saveAnswers(answers, votingRound)
         return votingRound.toString()
