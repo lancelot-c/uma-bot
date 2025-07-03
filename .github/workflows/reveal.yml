@@ -14,6 +14,7 @@ jobs:
       # Give the default GITHUB_TOKEN write permission to commit and push the
       # added or changed files to the repository.
       contents: write
+      pull-requests: write
 
     steps:
     
@@ -62,12 +63,11 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-
     - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
-      id: checkIfWorkingDay
+      id: checkIfNewVotingRound
       if: steps.reveal.outputs.revelead != '1'
       continue-on-error: true # Make sure we continue the job if this script fails
-      run: cd uma-bot && echo "votingRound='$(tsx ./smart-contract-calls/shouldIWorkToday.ts)'" >> "$GITHUB_OUTPUT"
+      run: cd uma-bot && tsx ./smart-contract-calls/isNewVotingRound.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
@@ -75,14 +75,13 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-
     - name: Pushes answers file
-      if: steps.reveal.outputs.revelead != '1' && steps.checkIfWorkingDay.outputs.votingRound != '0'
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
       uses: dmnemec/copy_file_to_another_repo_action@main
       env:
         API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
       with:
-        source_file: './uma-bot/test-data/${{ steps.checkIfWorkingDay.outputs.votingRound }}.json'
+        source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
         destination_repo: 'lancelot-c/uma-answers'
         destination_branch: 'answers'
         destination_folder: 'voting-rounds'
@@ -91,19 +90,15 @@ jobs:
         commit_message: 'Fresh answer file for the new voting round'
 
 
-
-
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@v7
-    #   with:
-    #     token: ${{ secrets.UMA_ANSWERS_REPO_ACCESS_TOKEN }}
-    #     title: 'Answers for voting round X'
-    #     body: 'Conversation for voting round X'
-    #     branch: 'main'
-    #     base: 'main'
-    #     draft: false
-    #     add-paths: |
-    #         test-data/answers.json
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+        title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+        body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
+        branch: 'answers'
+        base: 'main'
+        draft: false
 
 
    

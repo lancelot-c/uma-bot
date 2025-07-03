@@ -1,8 +1,10 @@
 import { Answer, postOnDiscord, saveAnswers } from "../test/utils";
 import { COMMIT_PHASE, createPublicEthClient, decodeIdentifier, getCurrentPhase, getPendingRequests, logInfo } from "./common";
+import fs from 'fs'
+import 'dotenv/config'
 
 const returnValue = await run()
-process.stdout.write(returnValue)
+fs.appendFileSync(process.env.GITHUB_OUTPUT as string, `votingRound=${returnValue}\n`)
 
 async function run(): Promise<string> {
 
