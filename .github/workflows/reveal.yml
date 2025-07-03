@@ -27,14 +27,6 @@ jobs:
       with:
         node-version: lts/*
 
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        ref: answers # branch
-        path: uma-answers
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
-
 
     - name: Install dependencies # because isRevealPhase needs viem
       run: cd uma-bot && npm install
@@ -99,6 +91,13 @@ jobs:
 
 
 
+    - name: Checkout uma-answers repo
+      uses: actions/checkout@v4
+      with:
+        repository: lancelot-c/uma-answers
+        # ref: answers # branch
+        token: ${{ secrets.GH_ACCESS_TOKEN }}
+
 
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v7
@@ -106,7 +105,7 @@ jobs:
         token: ${{ secrets.GH_ACCESS_TOKEN }}
         title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
         body: 'The UMA.rocks multisig owners, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
-        path: ./uma-answers/
+        # path: ./uma-answers/
         branch: 'answers'
         base: 'main'
         draft: false
