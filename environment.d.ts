@@ -10,6 +10,7 @@ declare global {
             UPSTASH_API_KEY: string
             RPC_URL: string
             GITHUB_OUTPUT: string
+            GH_ACCESS_TOKEN: string
         }
     }
 }

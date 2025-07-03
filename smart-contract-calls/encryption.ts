@@ -1,4 +1,5 @@
 import crypto from "node:crypto"
+import 'dotenv/config'
 
 const algorithm = "aes-256-cbc"
 const secretKey = process.env.ENCRYPTION_KEY
