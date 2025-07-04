@@ -2,6 +2,7 @@ import { Answer, postOnDiscord, saveAnswers } from "../test/utils";
 import { COMMIT_PHASE, createPublicEthClient, decodeIdentifier, getCurrentPhase, getPendingRequests, logInfo } from "./common";
 import fs from 'fs'
 import 'dotenv/config'
+import { createOctokit } from "./github";
 
 const returnValue = await run()
 fs.appendFileSync(process.env.GITHUB_OUTPUT as string, `votingRound=${returnValue}\n`)
@@ -15,7 +16,26 @@ async function run(): Promise<string> {
     const hasRequests = requests.length > 0
     const shouldCommitToday = isCommitPhase && hasRequests
 
-    if (shouldCommitToday) {
+    const octokit = createOctokit()
+    
+    const response = await octokit.request('POST /repos/{owner}/{repo}/pulls', {
+        owner: 'lancelot-c',
+        repo: 'uma-answers',
+        title: 'Amazing new feature',
+        body: 'Please pull these awesome changes in!',
+        head: 'answers',
+        base: 'main',
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+
+    console.log(response)
+
+    const prUrl = response.url
+    console.log(`PR URL: ${prUrl}`)
+
+    if (false) {
 
         const pluralString = requests.length > 1 ? 's' : ''
         const votingRound = requests[0].lastVotingRound
@@ -23,13 +43,13 @@ async function run(): Promise<string> {
         const pullRequestNumber = votingRound - offsetVotingRound
 
         // Post in #dev channel
-        await logInfo(`${requests.length} answer${pluralString} to find today`)
+        // await logInfo(`${requests.length} answer${pluralString} to find today`)
 
         // Post in #history channel
         let content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\n`
         content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) and merge it.`
 
-        await postOnDiscord('', 0, '', [], content)
+        // await postOnDiscord('', 0, '', [], content)
 
         // Create fresh answers.json
         let answers: Answer[] = []

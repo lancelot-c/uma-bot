@@ -18,20 +18,20 @@ jobs:
 
     steps:
     
-    # - name: Checkout uma-bot repo
-    #   uses: actions/checkout@v4
-    #   with:
-    #     ref: ${{ github.head_ref }}
-    #     path: uma-bot
-    # - uses: actions/setup-node@v4
-    #   with:
-    #     node-version: lts/*
+    - name: Checkout uma-bot repo
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.head_ref }}
+        path: uma-bot
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
 
 
-    # - name: Install dependencies # because isRevealPhase needs viem
-    #   run: cd uma-bot && npm install
-    # - name: Install tsx globally to run ts files independently
-    #   run: npm i -g tsx
+    - name: Install dependencies # because isRevealPhase needs viem
+      run: cd uma-bot && npm install
+    - name: Install tsx globally to run ts files independently
+      run: npm i -g tsx
 
 
 
@@ -63,16 +63,17 @@ jobs:
     #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    # - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
-    #   id: checkIfNewVotingRound
-    #   if: steps.reveal.outputs.revelead != '1'
-    #   continue-on-error: true # Make sure we continue the job if this script fails
-    #   run: cd uma-bot && tsx ./smart-contract-calls/isNewVotingRound.ts
-    #   env:
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+    - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
+      id: checkIfNewVotingRound
+    # if: steps.reveal.outputs.revelead != '1'
+      continue-on-error: true # Make sure we continue the job if this script fails
+      run: cd uma-bot && tsx ./smart-contract-calls/isNewVotingRound.ts
+      env:
+        RPC_URL: ${{ secrets.RPC_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
     # - name: Install Playwright Browsers
@@ -114,28 +115,28 @@ jobs:
     #     commit_message: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
 
 
-    - name: Checkout uma-answers repo
-      uses: actions/checkout@v4
-      with:
-        repository: lancelot-c/uma-answers
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
+    # - name: Checkout uma-answers repo
+    #   uses: actions/checkout@v4
+    #   with:
+    #     repository: lancelot-c/uma-answers
+    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
 
-    - name: Create Pull Request
-      uses: Marius0101/create-pull-request@develop
-      id: create-pull-request
-      with:
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          title: 'Add new answers' 
-          body: |
-            This is a body description.
-            - It supports **Markdown**
-          head: 'answers' 
-          base: 'main' 
-          user_reviewers: |
-            ilMagnifico
-            lancelot-c
-    - run: |
-          echo "Pull request number: ${{ steps.create-pull-request.outputs.pr_number }}""
+    # - name: Create Pull Request
+    #   uses: Marius0101/create-pull-request@develop
+    #   id: create-pull-request
+    #   with:
+    #       token: ${{ secrets.GH_ACCESS_TOKEN }}
+    #       title: 'Add new answers' 
+    #       body: |
+    #         This is a body description.
+    #         - It supports **Markdown**
+    #       head: 'answers' 
+    #       base: 'main' 
+    #       user_reviewers: |
+    #         ilMagnifico
+    #         lancelot-c
+    # - run: |
+    #       echo "Pull request number: ${{ steps.create-pull-request.outputs.pr_number }}""
 
     # - name: Create Pull Request
     #   uses: peter-evans/create-pull-request@v3
