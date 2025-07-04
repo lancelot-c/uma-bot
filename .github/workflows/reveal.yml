@@ -18,14 +18,14 @@ jobs:
 
     steps:
     
-    - name: Checkout uma-bot repo
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.head_ref }}
-        path: uma-bot
-    - uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
+    # - name: Checkout uma-bot repo
+    #   uses: actions/checkout@v4
+    #   with:
+    #     ref: ${{ github.head_ref }}
+    #     path: uma-bot
+    # - uses: actions/setup-node@v4
+    #   with:
+    #     node-version: lts/*
 
 
     # - name: Install dependencies # because isRevealPhase needs viem
@@ -115,20 +115,37 @@ jobs:
 
 
     - name: Checkout uma-answers repo
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: lancelot-c/uma-answers
         token: ${{ secrets.GH_ACCESS_TOKEN }}
 
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+      uses: Marius0101/create-pull-request@develop
+      id: create-pull-request
       with:
-        token: ${{ secrets.GH_ACCESS_TOKEN }}
-        title: 'Your PR title'
-        body: 'Your PR description'
-        branch: 'answers'
-        base: 'main'
-        draft: false
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          title: 'Add new answers' 
+          body: |
+            This is a body description.
+            - It supports **Markdown**
+          head: 'answers' 
+          base: 'main' 
+          user_reviewers: |
+            ilMagnifico
+            lancelot-c
+    - run: |
+          echo "Pull request number: ${{ steps.create-pull-request.outputs.pr_number }}""
+
+    # - name: Create Pull Request
+    #   uses: peter-evans/create-pull-request@v3
+    #   with:
+    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
+    #     title: 'Your PR title'
+    #     body: 'Your PR description'
+    #     branch: 'answers'
+    #     base: 'main'
+    #     draft: false
 
     # - name: Checkout uma-answers repo
     #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
