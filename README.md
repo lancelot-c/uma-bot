@@ -9,7 +9,7 @@
 
 
 
-👉 Answers fetched from the [UMA.rocks multisig repository](https://github.com/lancelot-c/uma-answers)
+👉 Answers fetched from the [uma-answers repository](https://github.com/lancelot-c/uma-answers)
 
 ## Get involved
 👨‍💻 Contribute by opening pull requests

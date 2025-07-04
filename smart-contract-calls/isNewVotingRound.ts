@@ -26,7 +26,7 @@ async function run(): Promise<string> {
         await logInfo(`${requests.length} answer${pluralString} to find today`)
 
         // Post in #history channel
-        const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) by the UMA.rocks multisig owners, feel free to join the conversation there.`
+        const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) by the UMA.rocks voting committee, feel free to join the conversation there.`
         
         await postOnDiscord('', 0, '', [], content)
 
