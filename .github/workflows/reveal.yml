@@ -35,39 +35,39 @@ jobs:
 
 
 
-    # - name: Reveal
-    #   id: reveal
-    #   continue-on-error: true
-    #   run: tsx ./uma-bot/smart-contract-calls/reveal.ts
-    #   # run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
-    #   env:
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+    - name: Reveal
+      id: reveal
+      continue-on-error: true
+      run: tsx ./uma-bot/smart-contract-calls/reveal.ts
+      # run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
+      env:
+        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
-    # - name: Post summary on Discord
-    #   if: steps.reveal.outputs.revelead == '1'
-    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
-    #   run: tsx ./uma-bot/smart-contract-calls/summary.ts
-    #   env: # Set the secret as an environment variable
-    #     PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+    - name: Post summary on Discord
+      if: steps.reveal.outputs.revelead == '1'
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: tsx ./uma-bot/smart-contract-calls/summary.ts
+      env: # Set the secret as an environment variable
+        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    - name: Check if we need to provide answers today & if new unsupported price identifiers are detected
+    - name: Check if new voting round & if yes, create fresh answers file
       id: checkIfNewVotingRound
-    # if: steps.reveal.outputs.revelead != '1'
+      if: steps.reveal.outputs.revelead != '1'
       continue-on-error: true # Make sure we continue the job if this script fails
-      run: cd uma-bot && tsx ./smart-contract-calls/isNewVotingRound.ts
+      run: cd uma-bot && tsx ./smart-contract-calls/checkNewVotingRound.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
@@ -76,147 +76,50 @@ jobs:
         GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 
-    # - name: Install Playwright Browsers
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   continue-on-error: true
-    #   run: cd uma-bot && npx playwright install --with-deps chromium
+    - name: Install Playwright Browsers
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      continue-on-error: true
+      run: cd uma-bot && npx playwright install --with-deps chromium
 
 
-    # - name: Enrich answers file with questions and most probable answers
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   continue-on-error: true # See https://stackoverflow.com/a/70048004
-    #   run: 'cd uma-bot && xvfb-run npx playwright test ./test/enrich-answers.spec.ts ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
-    #   env: # Set the secrets as an environment variable
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
-    #     UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
-    #     DISCORD_EMAIL: ${{ secrets.DISCORD_EMAIL }}
-    #     DISCORD_PASSWORD: ${{ secrets.DISCORD_PASSWORD }}
-    #     ATTEMPT_DISCORD_LOGIN: ${{ secrets.ATTEMPT_DISCORD_LOGIN }}
-    #     DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     TRUSTED_USERS: ${{ secrets.TRUSTED_USERS }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+    - name: Enrich answers file with questions and most probable answers
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: 'cd uma-bot && xvfb-run npx playwright test ./test/enrich-answers.spec.ts ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+      env: # Set the secrets as an environment variable
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        DISCORD_EMAIL: ${{ secrets.DISCORD_EMAIL }}
+        DISCORD_PASSWORD: ${{ secrets.DISCORD_PASSWORD }}
+        ATTEMPT_DISCORD_LOGIN: ${{ secrets.ATTEMPT_DISCORD_LOGIN }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        TRUSTED_USERS: ${{ secrets.TRUSTED_USERS }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
 
-    # - name: Pushes answers file
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: dmnemec/copy_file_to_another_repo_action@main
-    #   env:
-    #     API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
-    #   with:
-    #     source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
-    #     destination_repo: 'lancelot-c/uma-answers'
-    #     destination_branch: 'answers'
-    #     destination_folder: 'voting-rounds'
-    #     user_email: 'uma-bot@users.noreply.github.com'
-    #     user_name: 'uma-bot'
-    #     commit_message: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+    - name: Push answers file
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      uses: dmnemec/copy_file_to_another_repo_action@main
+      env:
+        API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
+      with:
+        source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
+        destination_repo: 'lancelot-c/uma-answers'
+        destination_branch: 'answers'
+        destination_folder: 'voting-rounds'
+        user_email: 'uma-bot@users.noreply.github.com'
+        user_name: 'uma-bot'
+        commit_message: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
 
 
-    # - name: Checkout uma-answers repo
-    #   uses: actions/checkout@v4
-    #   with:
-    #     repository: lancelot-c/uma-answers
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-
-    # - name: Create Pull Request
-    #   uses: Marius0101/create-pull-request@develop
-    #   id: create-pull-request
-    #   with:
-    #       token: ${{ secrets.GH_ACCESS_TOKEN }}
-    #       title: 'Add new answers' 
-    #       body: |
-    #         This is a body description.
-    #         - It supports **Markdown**
-    #       head: 'answers' 
-    #       base: 'main' 
-    #       user_reviewers: |
-    #         ilMagnifico
-    #         lancelot-c
-    # - run: |
-    #       echo "Pull request number: ${{ steps.create-pull-request.outputs.pr_number }}""
-
-    # - name: Create Pull Request
-    #   uses: peter-evans/create-pull-request@v3
-    #   with:
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-    #     title: 'Your PR title'
-    #     body: 'Your PR description'
-    #     branch: 'answers'
-    #     base: 'main'
-    #     draft: false
-
-    # - name: Checkout uma-answers repo
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: actions/checkout@v4
-    #   with:
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-    #     repository: lancelot-c/uma-answers
-    #     # ref: answers
-
-
-    # - name: Create Pull Request
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   uses: peter-evans/create-pull-request@v7
-    #   with:
-    #     token: ${{ secrets.GH_ACCESS_TOKEN }}
-    #     title: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
-    #     body: 'The UMA.rocks voting committee, added as reviewers, have 24h to reach a consensus on this PR, approve it, and merge it.'
-    #     # path: uma-answers
-    #     branch: 'answers'
-    #     base: 'main'
-    #     draft: false
-
-
-   
-
-
-
-
-
-
-
-
-
-
-    #TODO: delete the code below
-
-
-
-    # - name: Commit and push changes (if any)
-    #   shell: bash
-    #   env:
-    #     CI_COMMIT_MESSAGE: update answers.json
-    #     CI_COMMIT_AUTHOR: github-actions[bot]
-    #     CI_COMMIT_EMAIL: lancelot-c@users.noreply.github.com
-    #   run: |
-    #     cd uma-answers
-    #     git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-    #     git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
-    #     if [[ `git status` ]]; then
-    #         # Changes
-    #         git add test-data/answers.json
-    #         git commit -m "${{ env.CI_COMMIT_MESSAGE }}"
-    #         git push
-    #     else
-    #         # No changes
-    #         echo "no changes to answers.json"
-    #         exit 0
-    #     fi
-
-    # - uses: stefanzweifel/git-auto-commit-action@v5  # Commit all changed files back to the repository
-    #   with:
-    #     # Optional. Commit message for the created commit.
-    #     # Defaults to "Apply automatic changes"
-    #     repository: ./uma-bot
-    #     commit_message: Automated report
-
-
-    # - name: Cancel job if not reveal phase
-    #   continue-on-error: false # Make sure we stop the job if this script fails
-    #   run: tsx ./uma-bot/smart-contract-calls/isRevealPhase.ts
-    #   env:
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}  
+    - name: Create pull request
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      run: cd uma-bot && tsx ./smart-contract-calls/notifyNewVotingRound.ts
+      env:
+        RPC_URL: ${{ secrets.RPC_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}

@@ -81,3 +81,24 @@ export async function getGithubPublicKey(octokit: Octokit): Promise<[string, str
 
     return [res.data.key_id, res.data.key]
 }
+
+export async function createPullRequest(octokit: Octokit, title: string, body: string): Promise<string> {
+    
+    const res = await octokit.request('POST /repos/{owner}/{repo}/pulls', {
+        owner: 'lancelot-c',
+        repo: 'uma-answers',
+        title,
+        body,
+        head: 'answers',
+        base: 'main',
+        draft: false,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+    })
+
+    // console.log(res)
+
+    const prUrl = res.data.html_url
+    return prUrl
+}
