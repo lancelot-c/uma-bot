@@ -26,8 +26,9 @@ async function run(): Promise<string> {
         await logInfo(`${requests.length} answer${pluralString} to find today`)
 
         // Post in #history channel
-        const content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\nAnswers are being chosen [on Github](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) by the UMA.rocks voting committee, feel free to join the conversation there.`
-        
+        let content = `📥 *** NEW VOTING ROUND (${requests.length} dispute${pluralString})***\n`
+        content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](<https://github.com/lancelot-c/uma-answers/pull/${pullRequestNumber}/files>) and merge it.`
+
         await postOnDiscord('', 0, '', [], content)
 
         // Create fresh answers.json
