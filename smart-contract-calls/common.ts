@@ -700,6 +700,19 @@ export function umaRocksAlreadyDidSomething(eventSummaries: EventSummary[]): boo
     return eventSummaries.some(s => s.madeByDelegate === true)
 }
 
+export async function getTempAnswers(votingRound: number): Promise<Answer[] | undefined> {
+
+    const answersFilepath = `../test-data/${votingRound}.json`
+
+    const { default: answersFile } = await import(answersFilepath, {
+        with: { type: "json" },
+    });
+
+    console.log(`Content of ${answersFilepath}`)
+    console.log(answersFile)
+
+    return parseAnswersFile(answersFile)
+}
 
 export async function getAnswers(votingRound: number): Promise<Answer[] | undefined> {
 
@@ -723,6 +736,11 @@ export async function getAnswers(votingRound: number): Promise<Answer[] | undefi
         logError(error.message);
         return undefined
     }
+
+    return parseAnswersFile(answersFile)
+}
+
+function parseAnswersFile(answersFile: any): Answer[] | undefined {
 
     if (!Array.isArray(answersFile) || answersFile.length == 0) {
         return undefined

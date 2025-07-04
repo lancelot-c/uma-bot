@@ -46,7 +46,6 @@ async function run(): Promise<string> {
 
             answers.push({
                 ancillaryData: r.ancillaryData,
-                // question: 'test question',
                 answer: 'P0'
             })
             

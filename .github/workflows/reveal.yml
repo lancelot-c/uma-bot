@@ -2,8 +2,8 @@ name: Reveal
 on:
   workflow_dispatch:
   schedule:
-    # Run every day at 1:00 UTC
-    - cron: '0 1 * * *'
+    # Run every day at 00:00 UTC
+    - cron: '0 0 * * *'
 
 jobs:
   playwright:
@@ -73,6 +73,30 @@ jobs:
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
+
+
+    - name: Install Playwright Browsers
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      continue-on-error: true
+      run: cd uma-bot && npx playwright install --with-deps chromium
+
+
+    - name: Enrich answers file with questions and most probable answers
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: 'cd uma-bot && xvfb-run npx playwright test ./test/enrich-answers.spec.ts ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+      env: # Set the secrets as an environment variable
+        RPC_URL: ${{ secrets.RPC_URL }}
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        DISCORD_EMAIL: ${{ secrets.DISCORD_EMAIL }}
+        DISCORD_PASSWORD: ${{ secrets.DISCORD_PASSWORD }}
+        ATTEMPT_DISCORD_LOGIN: ${{ secrets.ATTEMPT_DISCORD_LOGIN }}
+        DISCORD_CHANNEL_GENERAL_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_GENERAL_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        TRUSTED_USERS: ${{ secrets.TRUSTED_USERS }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
 
     - name: Pushes answers file
