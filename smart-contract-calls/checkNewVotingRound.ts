@@ -29,6 +29,7 @@ async function run(): Promise<string> {
             // Create new answer object for request
             answers.push({
                 ancillaryData: r.ancillaryData,
+                question: '', // will be populated later but need to be here to preserve the order "ancillaryData > question > answer" in the json file
                 answer: 'P0'
             })
             
