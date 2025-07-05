@@ -115,12 +115,12 @@ jobs:
         commit_message: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
 
 
-    # - name: Create pull request & notify all the stakeholders
-    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
-    #   run: cd uma-bot && tsx ./smart-contract-calls/notifyNewVotingRound.ts
-    #   env:
-    #     RPC_URL: ${{ secrets.RPC_URL }}
-    #     DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
-    #     DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
-    #     GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-    #     ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+    - name: Create pull request & notify all the stakeholders
+      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+      run: cd uma-bot && tsx ./smart-contract-calls/notifyNewVotingRound.ts
+      env:
+        RPC_URL: ${{ secrets.RPC_URL }}
+        DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        DISCORD_CHANNEL_HISTORY_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_HISTORY_WEBHOOK_URL }}
+        GH_ACCESS_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
