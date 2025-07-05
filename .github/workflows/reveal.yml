@@ -85,7 +85,7 @@ jobs:
     - name: Enrich answers file with questions and most probable answers
       if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: 'cd uma-bot && xvfb-run npx playwright test ./test/enrich-answers.spec.ts ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+      run: 'cd uma-bot && xvfb-run npx playwright test ./test/enrich-answers.spec.ts'
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}

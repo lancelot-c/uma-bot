@@ -4,7 +4,7 @@ import { createOctokit, createPullRequest } from "./github";
 import 'dotenv/config'
 
 
-// TODO: replace block by `const nbRequests = Number(process.argv[2])` to minimize RPC calls
+// TODO: get votingRound directly from process.env.GITHUB_OUTPUT in order to minimize RPC calls
 const publicClient = createPublicEthClient()
 const requests = await getPendingRequests(publicClient)
 const nbRequests = requests.length

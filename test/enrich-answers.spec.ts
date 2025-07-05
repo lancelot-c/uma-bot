@@ -1,7 +1,7 @@
 import { testWithSynpress } from '@synthetixio/synpress'
 import { ethereumWalletMockFixtures } from '@synthetixio/synpress/playwright'
 import { scrapAnswers, saveAnswers } from './utils'
-import { getTempAnswers, logError } from '../smart-contract-calls/common'
+import { createPublicEthClient, getPendingRequests, getTempAnswers, logError } from '../smart-contract-calls/common'
 import 'dotenv/config'
 
 const test = testWithSynpress(ethereumWalletMockFixtures)
@@ -12,14 +12,11 @@ test(`Enrich answers`, async ({ page }) => {
     // Let 10 minutes for the test to complete, fails otherwise
     test.setTimeout(10 * 60 * 1000);
 
-    if (process.argv) {
+    // TODO: get votingRound directly from process.env.GITHUB_OUTPUT in order to minimize RPC calls
+    const publicClient = createPublicEthClient()
+    const requests = await getPendingRequests(publicClient)
+    const votingRound = requests[0].lastVotingRound
 
-        process.argv.forEach((element, index) => {
-            console.log(`process.argv #${index}`, element)
-        });
-    }
-
-    const votingRound = Number(process.argv[2])
     const enrichedAnswers = await getTempAnswers(votingRound)
 
     if (!enrichedAnswers) {
