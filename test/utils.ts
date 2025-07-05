@@ -444,6 +444,10 @@ async function computeDisputeAnswer(answer: Answer, priceIdentifier: PriceIdenti
     return answer
 }
 
+async function sleep(ms: number): Promise<any> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: Page): Promise<Answer> {
 
     const discussionTab = page.getByRole('tab', { name: 'Discord Comments' })
@@ -452,12 +456,19 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     const joinDiscordDiscussion = page.getByLabel('Join discussion on Discord').last()
 
     console.log(`> Click discussion tab`)
-    await discussionTab.click();
+
+    try {
+        await discussionTab.click({ timeout: 10000 });
+    } catch {
+        logError('Timeout on discussionTab')
+    }
+
 
     console.log(`> Wait for discussions to load completely`)
 
     try {
-        await discussionLoadedLocator.waitFor({ timeout: 10000 })
+        // await discussionLoadedLocator.waitFor({ timeout: 10000 })
+        await sleep(5000)
     } catch {
         logError('Timeout on discussionLoadedLocator')
     }
