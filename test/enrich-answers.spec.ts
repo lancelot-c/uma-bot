@@ -12,6 +12,13 @@ test(`Enrich answers`, async ({ page }) => {
     // Let 10 minutes for the test to complete, fails otherwise
     test.setTimeout(10 * 60 * 1000);
 
+    if (process.argv) {
+
+        process.argv.forEach((element, index) => {
+            console.log(`process.argv #${index}`, element)
+        });
+    }
+
     const votingRound = Number(process.argv[2])
     const enrichedAnswers = await getTempAnswers(votingRound)
 
