@@ -17,7 +17,7 @@ const answers = await getAnswers(votingRound)
 if (answers) {
 
     // Post answers on UMA.rocks Discord
-    const embedDescription = `UMA.rocks has chosen the following answers for the current voting round. If you disagree with them you have 1 hour to vote for something else on your own, otherwise you don’t need to do anything as we will vote for you.`
+    const embedDescription = `The UMA.rocks voting committee has chosen the following answers for the current voting round. If you disagree with them you have 1 hour to vote for something else on your own, otherwise you don’t need to do anything as we will vote for you.`
 
     let embedFields: any[] = answers.map(a => {
         return {
