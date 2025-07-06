@@ -58,9 +58,9 @@ jobs:
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }} 
 
 
-    - name: Remove invalid delegators
+    - name: Update UMA stakes for all delegators & remove invalid delegators
       continue-on-error: true # See https://stackoverflow.com/a/70048004
-      run: tsx ./uma-bot/smart-contract-calls/validate-delegators.ts
+      run: tsx ./uma-bot/smart-contract-calls/update-delegators.ts
       env: # Set the secrets as an environment variable
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
