@@ -51,8 +51,8 @@ export const ACROSS_INVALID: bigint = BigInt(0);
 export const ACROSS_VALID: bigint = BigInt(1000000000000000000);
 
 
-export const TIMEOUT_RECEIPT = 120; // in seconds
-export const TIMEOUT_ACTION = 180; // in seconds (should be > TIMEOUT_RECEIPT)
+export const TIMEOUT_RECEIPT = 180; // in seconds
+export const TIMEOUT_ACTION = 240; // in seconds (should be > TIMEOUT_RECEIPT)
 export const DELAY_ACTION = 5; // in seconds (TODO: progressively lower this to 0 to perform actions as fast as possible)
 export const GAS_PREMIUM = BigInt(30) // add 30% gas premium to make sure transactions do not fail
 
