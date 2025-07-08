@@ -451,9 +451,9 @@ async function sleep(ms: number): Promise<any> {
 async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: Page): Promise<Answer> {
 
     const discussionTab = page.getByRole('tab', { name: 'Discord Comments' })
-    const discussionLoadedLocator = page.getByText('DetailsDiscord Comments').locator('div').filter({ hasText: '202' }).first() // hasText: '202' is a nice hack to detect when messages are loaded because messages contains dates like "2025-04-18, 3:36 PM"
+    const discussionLoadedLocator = page.getByText('res_data:').first() // .locator('div').filter({ hasText: '202' }).first() // hasText: '202' is a nice hack to detect when messages are loaded because messages contains dates like "2025-04-18, 3:36 PM"
     const discussionPanel = page.getByText('Warning: These comments are').first()
-    const joinDiscordDiscussion = page.getByLabel('Join discussion on Discord').last()
+    // const joinDiscordDiscussion = page.getByLabel('Join discussion on Discord').last()
 
     console.log(`> Click discussion tab`)
 
@@ -467,8 +467,7 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     console.log(`> Wait for discussions to load completely`)
 
     try {
-        // await discussionLoadedLocator.waitFor({ timeout: 10000 })
-        await sleep(5000)
+        await discussionLoadedLocator.waitFor({ timeout: 5000 })
     } catch {
         logError('Timeout on discussionLoadedLocator')
     }
@@ -480,6 +479,7 @@ async function computeDisputeAnswerFromDiscordDiscussion(answer: Answer, page: P
     try {
 
         await discussionPanel.waitFor({ timeout: 10000 })
+        await sleep(5000)
 
         const allMessages = await Promise.all((await discussionPanel.locator('> div').all()).slice(3).slice(0, -1).map(async (m) => await m.textContent() as string))
 
