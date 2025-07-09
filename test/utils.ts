@@ -439,7 +439,11 @@ async function computeDisputeAnswer(answer: Answer, priceIdentifier: PriceIdenti
         return answer
     }
     
-    answer = await computeDisputeAnswerFromDiscordDiscussion(answer, page)
+    // Do not compute any answer
+    // answer = await computeDisputeAnswerFromDiscordDiscussion(answer, page)
+
+    // Instead, choose P0 as the default answer in order to not influence the voting committee
+    answer.answer = 'P0'
 
     return answer
 }
