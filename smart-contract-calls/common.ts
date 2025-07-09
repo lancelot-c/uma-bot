@@ -379,7 +379,7 @@ export function decodeIdentifier(identifier: `0x${string}`): PriceIdentifier | u
 
 }
 
-export async function postInDevChannel(title: string, message: string, color: number): Promise<void> {
+export async function postInDevChannel(title: string, message: string, color: number, webhookUrl?: string): Promise<void> {
 
     const embed = {
         "title": title,
@@ -392,7 +392,9 @@ export async function postInDevChannel(title: string, message: string, color: nu
         "embeds": [embed]
     }
 
-    const webhookUrl = process.env.DISCORD_CHANNEL_DEV_WEBHOOK_URL as string
+    if (!webhookUrl) {
+        webhookUrl = process.env.DISCORD_CHANNEL_DEV_WEBHOOK_URL as string
+    }
 
     await fetch(webhookUrl, {
         method: "POST",
@@ -823,7 +825,7 @@ export async function logError(errorMessage: string, errorTitle?: string): Promi
     await postInDevChannel(`❌ ${errorTitle || ''}`, errorMessage, redColor)
 }
 
-export async function logInfo(infoTitle: string, infoMessage?: string): Promise<void> {
+export async function logInfo(infoTitle: string, infoMessage?: string, webhookUrl?: string): Promise<void> {
 
     if (infoMessage) {
         console.warn(`ℹ️ ${infoTitle}.\n${infoMessage}\n`)
@@ -832,5 +834,5 @@ export async function logInfo(infoTitle: string, infoMessage?: string): Promise<
     }
 
     const greenColor = 2064972
-    await postInDevChannel(`ℹ️ ${infoTitle}`, infoMessage || '', greenColor)
+    await postInDevChannel(`ℹ️ ${infoTitle}`, infoMessage || '', greenColor, webhookUrl)
 }

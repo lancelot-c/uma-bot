@@ -13,18 +13,20 @@ const votingRound = requests[0].lastVotingRound
 
 
 
-// 1. Post notification in #dev channel
-await logInfo(`${nbRequests} answer${pluralString} to find today`)
-
-
-// 2. Create Pull Request
+// 1. Create Pull Request
 const octokit = createOctokit()
-const title = `Answers for voting round ${votingRound}`
-const body = `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on this pull request and merge it.`
-const pullRequestUrl = await createPullRequest(octokit, title, body)
+const prTitle = `Answers for voting round ${votingRound}`
+const prBody = `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on this pull request and merge it.`
+const pullRequestUrl = await createPullRequest(octokit, prTitle, prBody)
 
 
-// 3. Post link to PR in #history channel
+// 2. Post notification in #voting-committee channel
+const infoTitle = `${nbRequests} answer${pluralString} to find today`
+const infoMessage = `[See pull request](<${pullRequestUrl}/files>)`
+await logInfo(infoTitle, infoMessage, process.env.DISCORD_CHANNEL_VOTING_COMMITTEE_WEBHOOK_URL as string)
+
+
+// 3. Post notification in #history channel
 let content = `📥 *** NEW VOTING ROUND (${nbRequests} dispute${pluralString})***\n`
 content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](<${pullRequestUrl}/files>) and merge it.`
 await postOnDiscord('', 0, '', [], content)
