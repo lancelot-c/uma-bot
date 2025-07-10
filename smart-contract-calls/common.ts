@@ -137,7 +137,8 @@ export async function writeContract(request: any, walletClient: WalletClient, pu
         console.log(`⚙️ Wait for the transaction to be included in a block...`, `\n`)
         const transactionReceipt = await publicClient.waitForTransactionReceipt({
             hash: transactionHash,
-            timeout: TIMEOUT_RECEIPT * 1000
+            retryCount: 12
+            // timeout: TIMEOUT_RECEIPT * 1000
         })
 
         if (transactionReceipt.status == "success") {
