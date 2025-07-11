@@ -3,10 +3,14 @@ import _sodium from 'libsodium-wrappers';
 import { logError } from "./common";
 import 'dotenv/config'
 
-export function createOctokit(): Octokit {
+export function createOctokit(githubToken?: string): Octokit {
     // Create a personal access token at https://github.com/settings/tokens/new?scopes=repo
+    if (!githubToken) {
+        githubToken = process.env.GH_ACCESS_TOKEN as string
+    }
+    
     return new Octokit({
-        auth: process.env.GH_ACCESS_TOKEN as string
+        auth: githubToken
     })
 }
 
