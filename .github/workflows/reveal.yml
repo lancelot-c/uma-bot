@@ -116,7 +116,7 @@ jobs:
 
 
     - name: Create pull request & notify all the stakeholders
-      if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
+    #   if: steps.reveal.outputs.revelead != '1' && steps.checkIfNewVotingRound.outputs.votingRound != '0'
       run: cd uma-bot && tsx ./smart-contract-calls/notifyNewVotingRound.ts
       env:
         RPC_URL: ${{ secrets.RPC_URL }}
