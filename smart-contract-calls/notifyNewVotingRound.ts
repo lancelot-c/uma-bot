@@ -22,11 +22,11 @@ const pullRequestUrl = await createPullRequest(octokit, prTitle, prBody)
 
 // 2. Post notification in #voting-committee channel
 const infoTitle = `${nbRequests} answer${pluralString} to find today`
-const infoMessage = `[Open pull request](<${pullRequestUrl}/files>)`
+const infoMessage = `[Open pull request](<${pullRequestUrl}>)`
 await logInfo(infoTitle, infoMessage, process.env.DISCORD_CHANNEL_VOTING_COMMITTEE_WEBHOOK_URL as string)
 
 
 // 3. Post notification in #history channel
 let content = `📥 *** NEW VOTING ROUND (${nbRequests} dispute${pluralString})***\n`
-content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](${pullRequestUrl}/files) and merge it.`
+content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](${pullRequestUrl}) and merge it.`
 await postOnDiscord('', 0, '', [], content)
