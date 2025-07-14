@@ -17,7 +17,7 @@ const votingRound = requests[0].lastVotingRound
 const octokit = createOctokit(process.env.VOTING_COMMITTEE_BOT_TOKEN as string)
 const prTitle = `Answers for voting round ${votingRound}`
 // const prBody = `The UMA.rocks voting committee, added as reviewers, have until 11AM UTC to come to a consensus on this pull request and merge it.`
-const pullRequestUrl = await createPullRequest(octokit, prTitle, undefined, 'voting_committee_guidelines.md')
+const pullRequestUrl = await createPullRequest(octokit, prTitle, undefined, './../voting_committee_guidelines.md')
 
 
 // // 2. Post notification in #voting-committee channel

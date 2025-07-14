@@ -1,6 +1,7 @@
 import { Octokit } from "@octokit/core";
 import _sodium from 'libsodium-wrappers';
 import { logError } from "./common";
+import { readFileSync } from 'fs'
 import 'dotenv/config'
 
 export function createOctokit(githubToken?: string): Octokit {
@@ -87,7 +88,7 @@ export async function getGithubPublicKey(octokit: Octokit): Promise<[string, str
 }
 
 // Provide either body or template but not both
-export async function createPullRequest(octokit: Octokit, title: string, body?: string, template?: string): Promise<string> {
+export async function createPullRequest(octokit: Octokit, title: string, body?: string, templatePath?: string): Promise<string> {
     
     let parameters: any = {
         owner: 'lancelot-c',
@@ -103,8 +104,19 @@ export async function createPullRequest(octokit: Octokit, title: string, body?: 
 
     if (body) {
         parameters.body = body
-    } else if (template) {
-        parameters.template = template
+    } else if (templatePath) {
+        // parameters.template = template
+
+        parameters.body = readFileSync(templatePath, { encoding: 'utf8' })
+        // , (err, data) => {
+
+        //     if (err) {
+        //         console.error(err)
+        //     }
+
+        //     parameters.body = data
+
+        // });
     }
 
     const res = await octokit.request('POST /repos/{owner}/{repo}/pulls', parameters)
