@@ -103,20 +103,13 @@ export async function createPullRequest(octokit: Octokit, title: string, body?: 
     }
 
     if (body) {
+        
         parameters.body = body
+
     } else if (templatePath) {
-        // parameters.template = template
 
         parameters.body = readFileSync(templatePath, { encoding: 'utf8' })
-        // , (err, data) => {
 
-        //     if (err) {
-        //         console.error(err)
-        //     }
-
-        //     parameters.body = data
-
-        // });
     }
 
     const res = await octokit.request('POST /repos/{owner}/{repo}/pulls', parameters)

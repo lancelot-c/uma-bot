@@ -20,13 +20,13 @@ const prTitle = `Answers for voting round ${votingRound}`
 const pullRequestUrl = await createPullRequest(octokit, prTitle, undefined, './voting_committee_guidelines.md')
 
 
-// // 2. Post notification in #voting-committee channel
-// const infoTitle = `${nbRequests} answer${pluralString} to find today`
-// const infoMessage = `[Open pull request](<${pullRequestUrl}>)`
-// await logInfo(infoTitle, infoMessage, process.env.DISCORD_CHANNEL_VOTING_COMMITTEE_WEBHOOK_URL as string)
+// 2. Post notification in #voting-committee channel
+const infoTitle = `${nbRequests} answer${pluralString} to find today`
+const infoMessage = `[Open pull request](<${pullRequestUrl}>)`
+await logInfo(infoTitle, infoMessage, process.env.DISCORD_CHANNEL_VOTING_COMMITTEE_WEBHOOK_URL as string)
 
 
-// // 3. Post notification in #history channel
-// let content = `📥 *** NEW VOTING ROUND (${nbRequests} dispute${pluralString})***\n`
-// content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](${pullRequestUrl}) and merge it.`
-// await postOnDiscord('', 0, '', [], content)
+// 3. Post notification in #history channel
+let content = `📥 *** NEW VOTING ROUND (${nbRequests} dispute${pluralString})***\n`
+content += `The UMA.rocks voting committee have until 11AM UTC to come to a consensus on [this pull request](${pullRequestUrl}) and merge it.`
+await postOnDiscord('', 0, '', [], content)
