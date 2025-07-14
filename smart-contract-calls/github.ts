@@ -96,6 +96,7 @@ export async function createPullRequest(octokit: Octokit, title: string, body: s
         head: 'answers',
         base: 'main',
         draft: false,
+        template: 'voting_committee_guidelines.md',
         headers: {
           'X-GitHub-Api-Version': '2022-11-28'
         }
