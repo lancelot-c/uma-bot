@@ -797,42 +797,62 @@ export async function takeActionForAccounts(action: (account: PrivateKeyAccount,
 
     }
 
-    // Wait for all transaction receipts
-    for (let i = 0; i < accounts.length; i++) {
+    // Request all transaction receipts
+    let receiptPromises: Promise<TransactionReceipt>[] = []
+    let addressMap: `0x${string}`[] = [] // Enable receipt to address mapping
 
-        let accountAddress = accounts[i].address
+    for (let i = 0; i < hashes.length; i++) {
+
         let hash = hashes[i]
 
         if (hash == ZERO_ADDRESS) {
             continue;
         }
 
-        try {
+        const receiptPromise = publicClient.waitForTransactionReceipt({
+            hash: hash,
+            timeout: TIMEOUT_RECEIPT * 1000
+            // pollingInterval: 5000,
+            // retryCount: 12,
+            // retryDelay: 15000
+        })
 
-            console.log(`⚙️ Wait for the transaction receipt of ${accountAddress} ...`, `\n`)
-            const transactionReceipt = await publicClient.waitForTransactionReceipt({
-                hash: hash,
-                // pollingInterval: 5000,
-                // retryCount: 12,
-                // retryDelay: 15000,
-                timeout: TIMEOUT_RECEIPT * 1000
-            })
+        receiptPromises.push(receiptPromise)
+        addressMap.push(accounts[i].address)
+    }
+
+    // Validate all transaction receipts
+    const results = await Promise.allSettled(receiptPromises)
+        
+    for (let i = 0; i < results.length; i++) {
+
+        const accountAddress = addressMap[i]
+
+        if (results[i].status == "fulfilled") {
+
+            const promiseResult = results[i] as unknown as PromiseFulfilledResult<TransactionReceipt>
+            const transactionReceipt = promiseResult.value
+            const transactionHash = transactionReceipt.transactionHash
 
             if (transactionReceipt.status == "success") {
-                
+            
                 console.log(`✅ Transaction confirmed for ${accountAddress}`)
-                addSuccessfulWallet(accountAddress, hash)
-
+                addSuccessfulWallet(accountAddress, transactionHash)
+    
             } else {
                 
                 logError(`Transaction reverted for ${accountAddress}`)
-                addFailedWallet(accountAddress, hash)
+                addFailedWallet(accountAddress, transactionHash)
             
             }
 
-        } catch (err) {
-            logError(`${err}`, `waitForTransactionReceipt failed for ${accountAddress}`)
-            addFailedWallet(accountAddress, hash)
+        } else {
+
+            const promiseResult = results[i] as unknown as PromiseRejectedResult
+            const rejectionReason = promiseResult.reason
+            logError(`${rejectionReason}`, `waitForTransactionReceipt failed for ${accountAddress}`)
+            addFailedWallet(accountAddress)
+
         }
 
     }
