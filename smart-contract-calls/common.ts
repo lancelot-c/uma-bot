@@ -3,13 +3,14 @@ import { privateKeyToAccount } from 'viem/accounts'
 import { mainnet } from 'viem/chains'
 import { Redis } from '@upstash/redis'
 import { umaContractAbi } from '../test/umaAbi'
-import { Answer } from '../test/utils'
+import { addFailedWallet, addSuccessfulWallet, Answer } from '../test/utils'
 import { decrypt } from "./encryption"
 
 export const RPC_URL = process.env.RPC_URL
 export const umaVotingV2ContractAddress = '0x004395edb43EFca9885CEdad51EC9fAf93Bd34ac'
 export const umaContractAddress = umaVotingV2ContractAddress
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000'
+export type TransactionHash = `0x${string}`
 
 export const voteCommittedEvent = 'event VoteCommitted(address indexed voter, address indexed caller, uint32 roundId, bytes32 indexed identifier, uint256 time, bytes ancillaryData)'
 export const voteRevealedEvent = 'event VoteRevealed(address indexed voter, address indexed caller, uint32 roundId, bytes32 indexed identifier, uint256 time, bytes ancillaryData, int256 price, uint128 numTokens)'
@@ -51,9 +52,9 @@ export const ACROSS_INVALID: bigint = BigInt(0);
 export const ACROSS_VALID: bigint = BigInt(1000000000000000000);
 
 
-export const TIMEOUT_RECEIPT = 4*60; // in seconds
-export const TIMEOUT_ACTION = 5*60; // in seconds (should be > TIMEOUT_RECEIPT)
-export const DELAY_ACTION = 5; // in seconds (TODO: progressively lower this to 0 to perform actions as fast as possible)
+export const TIMEOUT_ACTION = 3*60; // in seconds
+export const DELAY_ACTION = 10; // in seconds (TODO: progressively lower this to 0 to perform actions as fast as possible)
+export const TIMEOUT_RECEIPT = 3*60; // in seconds
 export const GAS_PREMIUM = BigInt(30) // add 30% gas premium to make sure transactions do not fail
 
 
@@ -84,11 +85,11 @@ export function isValidPriceIdentifier(priceIdentifier: any): priceIdentifier is
 }
 
 // Return true if successful, false otherwise
-export async function sendMulticallTransaction(args: Array<`0x${string}`>, account: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient, lastRequest?: any): Promise<[successful: boolean, transactionReceipt: TransactionReceipt | undefined]> {
+export async function sendMulticallTransaction(args: Array<TransactionHash>, account: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient, lastRequest?: any): Promise<TransactionHash> {
 
     if (args.length === 0) {
         logError(`Cannot send multicall with no args`)
-        return [false, undefined]
+        return ZERO_ADDRESS
     }
 
     // Only send multicall if there is more than 1 call, otherwise call the method directly (gas optimization)
@@ -102,19 +103,20 @@ export async function sendMulticallTransaction(args: Array<`0x${string}`>, accou
 
 }
 
-export async function simulateTransactionAndWriteContract(functionName: string, args: unknown[], account: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<[successful: boolean, transactionReceipt: TransactionReceipt | undefined]> {
+export async function simulateTransactionAndWriteContract(functionName: string, args: unknown[], account: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<TransactionHash> {
 
     const request = await simulateTransaction(functionName, args, account, publicClient)
 
     if (!request) {
         console.log(`🙅‍♂️ Abort ${functionName} transaction\n`)
-        return [false, undefined]
+        return ZERO_ADDRESS
     }
 
     return await writeContract(request, walletClient, publicClient)
 }
 
-export async function writeContract(request: any, walletClient: WalletClient, publicClient: PublicClient): Promise<[successful: boolean, transactionReceipt: TransactionReceipt | undefined]> {
+// Returns the transaction hash
+export async function writeContract(request: any, walletClient: WalletClient, publicClient: PublicClient): Promise<TransactionHash> {
 
     /* ⚠️ Viem bug:
     walletClient.writeContract doesn't estimate the gas properly and therefore results in a failed transaction 30% of the time with the "out of gas" error
@@ -132,30 +134,7 @@ export async function writeContract(request: any, walletClient: WalletClient, pu
     // const transactionHash = await sendTransactionFromRequest(request, walletClient, publicClient)
     // console.log(`Transaction hash: ${transactionHash}`, `\n`)
 
-    try {
-
-        console.log(`⚙️ Wait for the transaction to be included in a block...`, `\n`)
-        const transactionReceipt = await publicClient.waitForTransactionReceipt({
-            hash: transactionHash,
-            pollingInterval: 5000,
-            retryCount: 12,
-            retryDelay: 15000,
-            timeout: TIMEOUT_RECEIPT * 1000
-        })
-
-        if (transactionReceipt.status == "success") {
-            console.log(`✅ Transaction confirmed for ${request.account.address}`)
-            return [true, transactionReceipt]
-        } else {
-            logError(`Transaction reverted for ${request.account.address}`)
-            return [false, transactionReceipt]
-        }
-
-    } catch (err) {
-        logError(`${err}`, `waitForTransactionReceipt failed for ${request.account.address}`)
-        return [false, undefined]
-    }
-
+    return transactionHash;
 }
 
 // Return request if successful, undefined otherwise
@@ -575,16 +554,15 @@ export async function getCurrentPhase(publicClient: PublicClient): Promise<numbe
 }
 
 // Accepts a delegation request from a delegator
-export async function setDelegator(delegatorAddress: `0x${string}`, delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<boolean> {
+export async function setDelegator(delegatorAddress: `0x${string}`, delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<TransactionHash> {
 
-    const [successful, transactionReceipt] = await simulateTransactionAndWriteContract('setDelegator', [delegatorAddress], delegateAccount, publicClient, walletClient)
-    return successful
+    return await simulateTransactionAndWriteContract('setDelegator', [delegatorAddress], delegateAccount, publicClient, walletClient)
 
 }
 
 /* ⚠️ WARNING: this function should be called very carefully and strong checks should be made before calling it
  as there is no way to recover delegators once they are removed except by manually asking them to rejoin the pool */
-export async function removeDelegator(delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<boolean> {
+export async function removeDelegator(delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<TransactionHash> {
 
     return await setDelegator(ZERO_ADDRESS, delegateAccount, publicClient, walletClient)
 
@@ -765,15 +743,15 @@ function parseAnswersFile(answersFile: any): Answer[] | undefined {
 
 // Wait for p to resolve or resolve automatically after timeout seconds
 // returns the result of p if p resolved before setTimeout resolved, false otherwise
-export async function PromiseWithTimeout(p: Promise<`0x${string}`>, timeout: number): Promise<`0x${string}` | false> {
+export async function PromiseWithTimeout(p: Promise<TransactionHash>, timeout: number): Promise<TransactionHash | false> {
 
-    return new Promise<`0x${string}` | false>(async (resolve) => {
+    return new Promise<TransactionHash | false>(async (resolve) => {
 
         const timeoutID = setTimeout(() => {
             resolve(false)
         }, timeout * 1000)
 
-        let transactionHash: `0x${string}` = ZERO_ADDRESS;
+        let transactionHash: TransactionHash = ZERO_ADDRESS;
 
         // Protection to prevent an action failure from stopping the next actions
         try {
@@ -794,26 +772,72 @@ export async function wait(delay: number): Promise<void> {
 }
 
 // action promise should return the transaction hash if a transaction was made during the action, ZERO_ADDRESS otherwise
-export async function takeActionForAccounts(action: (account: PrivateKeyAccount, i: number) => Promise<`0x${string}`>, accounts: PrivateKeyAccount[]): Promise<any[]> {
+export async function takeActionForAccounts(action: (account: PrivateKeyAccount, i: number) => Promise<TransactionHash>, accounts: PrivateKeyAccount[], publicClient: PublicClient): Promise<any[]> {
 
-    const actionResults: any[] = []
+    const hashes: TransactionHash[] = []
 
+    // Perform all contract interactions
     for (let i = 0; i < accounts.length; i++) {
 
-        const actionResult = await PromiseWithTimeout(action(accounts[i], i), TIMEOUT_ACTION)
-        actionResults.push(actionResult)
+        const result = await PromiseWithTimeout(action(accounts[i], i), TIMEOUT_ACTION)
 
         // Add a small delay between transactions to prevent gas from increasing
-        const transactionWasJustMade = (actionResult != ZERO_ADDRESS && actionResult != false)
+        const transactionWasJustMade = (result != ZERO_ADDRESS && result != false)
         const isntLastAction = i < accounts.length - 1
+        let hash: TransactionHash = ZERO_ADDRESS
 
         if (transactionWasJustMade && isntLastAction) {
+
             await wait(DELAY_ACTION)
+            hash = result
+
+        }
+
+        hashes.push(hash)
+
+    }
+
+    // Wait for all transaction receipts
+    for (let i = 0; i < accounts.length; i++) {
+
+        let accountAddress = accounts[i].address
+        let hash = hashes[i]
+
+        if (hash == ZERO_ADDRESS) {
+            continue;
+        }
+
+        try {
+
+            console.log(`⚙️ Wait for the transaction receipt of ${accountAddress} ...`, `\n`)
+            const transactionReceipt = await publicClient.waitForTransactionReceipt({
+                hash: hash,
+                // pollingInterval: 5000,
+                // retryCount: 12,
+                // retryDelay: 15000,
+                timeout: TIMEOUT_RECEIPT * 1000
+            })
+
+            if (transactionReceipt.status == "success") {
+                
+                console.log(`✅ Transaction confirmed for ${accountAddress}`)
+                addSuccessfulWallet(accountAddress, hash)
+
+            } else {
+                
+                logError(`Transaction reverted for ${accountAddress}`)
+                addFailedWallet(accountAddress, hash)
+            
+            }
+
+        } catch (err) {
+            logError(`${err}`, `waitForTransactionReceipt failed for ${accountAddress}`)
+            addFailedWallet(accountAddress, hash)
         }
 
     }
 
-    return actionResults;
+    return hashes;
 }
 
 export async function logError(errorMessage: string, errorTitle?: string): Promise<void> {

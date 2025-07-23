@@ -1,6 +1,6 @@
 import { encodeFunctionData, PrivateKeyAccount } from 'viem'
 import { umaContractAbi } from './../test/umaAbi'
-import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteRevealedEvent, voteCommittedEvent, umaRocksAlreadyDidSomething } from './common'
+import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteRevealedEvent, voteCommittedEvent, umaRocksAlreadyDidSomething, TransactionHash } from './common'
 import { addFailedWallet, addSkippedWallet, addSuccessfulWallet } from '../test/utils'
 import fs from 'fs'
 import 'dotenv/config'
@@ -41,12 +41,12 @@ async function run(): Promise<string> {
     const nbDisputes = requests.length
 
     // Reveal votes for all wallets
-    await takeActionForAccounts(revealForAccount, delegateAccounts)
+    await takeActionForAccounts(revealForAccount, delegateAccounts, publicClient)
     return '1'
 
 
     // Return the transaction hash if a transaction was made, ZERO_ADDRESS otherwise
-    async function revealForAccount(account: PrivateKeyAccount, i: number): Promise<`0x${string}`> {
+    async function revealForAccount(account: PrivateKeyAccount, i: number): Promise<TransactionHash> {
 
         const delegateAddress = account.address
         const delegatorAddress = delegateToDelegator[delegateAddress]
@@ -133,19 +133,11 @@ async function run(): Promise<string> {
             return ZERO_ADDRESS;
         }
 
+        console.log(`Revealing ${ revealsData.length } votes.`)
         const walletClient = createWalletEthClient()
-        const [successful, transactionReceipt] = await sendMulticallTransaction(revealsData, account, publicClient, walletClient, lastRequest);
-        
-        const nbRevealed = successful ? revealsData.length : 0
-        console.log(`👁️ ${nbRevealed}/${nbDisputes} votes revealed\n`)
+        const hash = await sendMulticallTransaction(revealsData, account, publicClient, walletClient, lastRequest);
 
-        if (successful) {
-            addSuccessfulWallet(account.address, transactionReceipt?.transactionHash)
-        } else {
-            addFailedWallet(account.address, transactionReceipt?.transactionHash)
-        }
-
-        return (transactionReceipt ? transactionReceipt.transactionHash : ZERO_ADDRESS);
+        return hash;
     }
 
 }

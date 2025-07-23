@@ -1,6 +1,6 @@
 import { keccak256, encodeFunctionData, encodePacked, PrivateKeyAccount } from 'viem'
 import { umaContractAbi } from './../test/umaAbi'
-import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteCommittedEvent, umaRocksAlreadyDidSomething } from './common'
+import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteCommittedEvent, umaRocksAlreadyDidSomething, TransactionHash } from './common'
 import { addFailedWallet, addSkippedWallet, addSuccessfulWallet } from '../test/utils'
 
 const publicClient = createPublicEthClient()
@@ -29,11 +29,11 @@ const nbDisputes = requests.length
 const commitParamEncryptedVote = `` // seems to be optional
 
 // Commit votes for all wallets
-await takeActionForAccounts(commitForAccount, delegateAccounts)
+await takeActionForAccounts(commitForAccount, delegateAccounts, publicClient)
 
 
 // Return the transaction hash if a transaction was made, ZERO_ADDRESS otherwise
-async function commitForAccount(account: PrivateKeyAccount, i: number): Promise<`0x${string}`> {
+async function commitForAccount(account: PrivateKeyAccount, i: number): Promise<TransactionHash> {
 
     const delegateAddress = account.address
     const delegatorAddress = delegateToDelegator[delegateAddress]
@@ -133,17 +133,9 @@ async function commitForAccount(account: PrivateKeyAccount, i: number): Promise<
         return ZERO_ADDRESS;
     }
 
+    console.log(`Committing ${ commitsData.length } votes.`)
     const walletClient = createWalletEthClient()
-    const [successful, transactionReceipt] = await sendMulticallTransaction(commitsData, account, publicClient, walletClient, lastRequest);
-
-    const nbCommitted = successful ? commitsData.length : 0
-    console.log(`🗳️ ${nbCommitted}/${nbDisputes} votes committed\n`)
-
-    if (successful) {
-        addSuccessfulWallet(account.address, transactionReceipt?.transactionHash)
-    } else {
-        addFailedWallet(account.address, transactionReceipt?.transactionHash)
-    }
-
-    return (transactionReceipt ? transactionReceipt.transactionHash : ZERO_ADDRESS);
+    const hash = await sendMulticallTransaction(commitsData, account, publicClient, walletClient, lastRequest);
+    
+    return hash;
 }

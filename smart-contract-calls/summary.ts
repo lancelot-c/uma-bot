@@ -2,13 +2,13 @@ import { postOnDiscord, getDirectories } from '../test/utils';
 import path from 'path'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { createPublicEthClient, getCurrentPhase, logError, ZERO_ADDRESS, getDelegateAddresses } from './common';
+import { createPublicEthClient, getCurrentPhase, logError, ZERO_ADDRESS, getDelegateAddresses, TransactionHash } from './common';
 
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-export type DelegateTransaction = [delegateAddress: `0x${string}`, transactionHash: `0x${string}`]
+export type DelegateTransaction = [delegateAddress: `0x${string}`, transactionHash: TransactionHash]
 
 const skippedWalletsFolder = path.join(__dirname, './../test-data/skipped')
 console.log(`> Attempting to get folders inside ${skippedWalletsFolder}`)
