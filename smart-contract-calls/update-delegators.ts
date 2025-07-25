@@ -49,12 +49,12 @@ export async function removeDelegatorIfInvalid(delegateAccount: PrivateKeyAccoun
         await deleteMemberFromBackend(delegateAddress, redis)
 
         // Uncomment line below to remove delegator from UMA smart contract
-        // await removeDelegator(delegateAccount, publicClient, walletClient)
+        await removeDelegator(delegateAccount, publicClient, walletClient)
 
         // Post message on Discord
-        const errorTitle = `Someone just left the pool 😢`
-        const errorMessage = `Delegator ${delegateInfos.stakerAddress} with delegate ${delegateInfos.delegateAddress}. Remove it manually from the UMA webapp.`
-        await logError(errorMessage, errorTitle)
+        // const errorTitle = `Someone just left the pool 😢`
+        // const errorMessage = `Delegator ${delegateInfos.stakerAddress} with delegate ${delegateInfos.delegateAddress}. Remove it manually from the UMA webapp.`
+        // await logError(errorMessage, errorTitle)
 
         return true
     }
