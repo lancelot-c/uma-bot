@@ -786,10 +786,13 @@ export async function takeActionForAccounts(action: (account: PrivateKeyAccount,
         const isntLastAction = i < accounts.length - 1
         let hash: TransactionHash = ZERO_ADDRESS
 
-        if (transactionWasJustMade && isntLastAction) {
+        if (transactionWasJustMade) {
 
-            await wait(DELAY_ACTION)
             hash = result
+
+            if (isntLastAction) {
+                await wait(DELAY_ACTION)
+            }
 
         }
 
