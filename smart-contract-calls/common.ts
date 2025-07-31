@@ -118,22 +118,28 @@ export async function simulateTransactionAndWriteContract(functionName: string, 
 // Returns the transaction hash
 export async function writeContract(request: any, walletClient: WalletClient, publicClient: PublicClient): Promise<TransactionHash> {
 
+    let transactionHash: TransactionHash = ZERO_ADDRESS
+
     /* ⚠️ Viem bug:
-    walletClient.writeContract doesn't estimate the gas properly and therefore results in a failed transaction 30% of the time with the "out of gas" error
-    The workaround is to call walletClient.sendTransaction instead, which walletClient.writeContract would call anyway internally (see https://viem.sh/docs/contract/writeContract#writecontract )
+    walletClient.writeContract doesn't estimate the gas properly and therefore result in a failed transaction 30% of the time with the "out of gas" error
+    The workaround is to manually add the gas to the request (option 1 - preferred) or to call walletClient.sendTransaction instead (option 2)
     */
 
-    // BUGGY
-    console.log('Gas before addGasToRequest: ', request.gas)
+    // Option 1
+    console.log('Request default gas: ', request.gas)
     await addGasToRequest(request, publicClient)
-    console.log('Gas after addGasToRequest: ', request.gas)
-    const transactionHash = await walletClient.writeContract(request)
+    console.log('Set request gas to: ', request.gas)
+
+    if (request.gas) {
+        transactionHash = await walletClient.writeContract(request)
+    }
+
+
+    // Option 2
+    // transactionHash = await sendTransactionFromRequest(request, walletClient, publicClient)
+    
+
     console.log(`Transaction hash: ${transactionHash}`, `\n`)
-
-    // WORKS
-    // const transactionHash = await sendTransactionFromRequest(request, walletClient, publicClient)
-    // console.log(`Transaction hash: ${transactionHash}`, `\n`)
-
     return transactionHash;
 }
 
@@ -206,21 +212,30 @@ export async function sendTransaction(account: PrivateKeyAccount, data: `0x${str
     return hash
 }
 
-export async function estimateGas(functionName: string, args: any[], account: PrivateKeyAccount, publicClient: PublicClient) {
+export async function estimateGas(functionName: string, args: any[], account: PrivateKeyAccount, publicClient: PublicClient): Promise<bigint | undefined> {
 
-    let gas = await publicClient.estimateContractGas({
-        address: umaContractAddress,
-        abi: umaContractAbi,
-        functionName,
-        args,
-        account,
-    })
+    let gas: bigint | undefined = undefined
 
-    gas = gas + (gas * GAS_PREMIUM) / 100n; // Add gas premium to prevent transactions to fail
+    try {
+
+        gas = await publicClient.estimateContractGas({
+            address: umaContractAddress,
+            abi: umaContractAbi,
+            functionName,
+            args,
+            account,
+        })
+    
+        gas = gas + (gas * GAS_PREMIUM) / 100n; // Add gas premium to prevent transactions to fail
+
+    } catch (err) {
+        logError(`${err}`, `estimateContractGas failed for ${account.address}`)
+    }
+    
     return gas;
 }
 
-export async function addGasToRequest(request: any, publicClient: PublicClient) {
+export async function addGasToRequest(request: any, publicClient: PublicClient): Promise<void> {
 
     request.gas = await estimateGas(request.functionName, request.args, request.account, publicClient)
 
