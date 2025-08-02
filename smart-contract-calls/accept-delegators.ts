@@ -82,11 +82,11 @@ for (let i = 0; i < pendingAccounts.length; i++) {
 
 
         if (shouldAcceptRequest) {
-            console.log(`⚙️ Accepting delegation request...`)
+            console.log(`✅ Accepting delegation request...`)
             const walletClient = createWalletEthClient()
             await acceptDelegationRequest(delegateAddress, latestDelegator, umaStake, account, publicClient, walletClient)
         } else {
-            console.log(`Delegation request ignored`)
+            console.log(`🙅‍♂️ Delegation request ignored`)
         }
 
 
