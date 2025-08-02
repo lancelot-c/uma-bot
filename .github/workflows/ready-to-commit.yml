@@ -98,6 +98,7 @@ jobs:
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
         UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
         
     # See https://snyk.io/blog/how-to-add-playwright-tests-pr-ci-github-actions/
