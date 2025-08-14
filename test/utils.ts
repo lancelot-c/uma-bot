@@ -2,10 +2,10 @@ import { type Page, type Locator, expect } from '@playwright/test'
 import path from 'path'
 import fs from 'fs'
 import { readdir } from 'fs/promises'
-import { z } from 'zod'
+// import { z } from 'zod'
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
-import { ALWAYS_APPROVE_GOVERNANCE_PROPOSALS, createPublicEthClient, decodeIdentifier, getDelegatePrivateKeys, getPendingRequests, logError, PriceIdentifier } from './../smart-contract-calls/common'
+import { ALWAYS_APPROVE_GOVERNANCE_PROPOSALS, createPublicEthClient, decodeIdentifier, getPendingRequests, logError, PriceIdentifier } from './../smart-contract-calls/common'
 
 
 const __filename = fileURLToPath(import.meta.url);
@@ -173,12 +173,12 @@ export async function postOnDiscord(embedTitle: string, embedColor: number, embe
 
 
 // Custom implementation of `locator.allTextContents()` that is not utilizing `.map` which is not accessible under MetaMask's scuttling mode.
-export async function allTextContents(locators: Locator[]) {
-    const names = await Promise.all(locators.map((locator) => locator.textContent()))
+// export async function allTextContents(locators: Locator[]) {
+//     const names = await Promise.all(locators.map((locator) => locator.textContent()))
 
-    // We're making sure that the return type is `string[]` same as `locator.allTextContents()`.
-    return names.map((name) => z.string().parse(name))
-}
+//     // We're making sure that the return type is `string[]` same as `locator.allTextContents()`.
+//     return names.map((name) => z.string().parse(name))
+// }
 
 export function addSkippedWallet(delegateAddress: `0x${string}`) {
     createEmptyFolder(`./../test-data/skipped/${delegateAddress}`)

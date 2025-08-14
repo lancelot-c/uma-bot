@@ -1,13 +1,10 @@
-import { testWithSynpress } from '@synthetixio/synpress'
-import { ethereumWalletMockFixtures } from '@synthetixio/synpress/playwright'
+import { test } from '@playwright/test';
 import { scrapAnswers, saveAnswers } from './utils'
 import { createPublicEthClient, getPendingRequests, getTempAnswers, logError } from '../smart-contract-calls/common'
 import 'dotenv/config'
 
-const test = testWithSynpress(ethereumWalletMockFixtures)
 
-
-test(`Enrich answers`, async ({ page }) => {
+test('Enrich answers', async ({ page }) => {
 
     // Let 10 minutes for the test to complete, fails otherwise
     test.setTimeout(10 * 60 * 1000);
