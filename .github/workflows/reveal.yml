@@ -106,13 +106,13 @@ jobs:
       env:
         API_TOKEN_GITHUB: ${{ secrets.GH_ACCESS_TOKEN }}
       with:
-        source_file: './uma-bot/test-data/${{ steps.checkIfNewVotingRound.outputs.votingRound }}.json'
+        source_file: './uma-bot/test-data/10157.json'
         destination_repo: 'lancelot-c/uma-answers'
         destination_branch: 'answers'
         destination_folder: 'voting-rounds'
         user_email: 'uma-bot@users.noreply.github.com'
         user_name: 'uma-bot'
-        commit_message: 'Answers for voting round ${{ steps.checkIfNewVotingRound.outputs.votingRound }}'
+        commit_message: 'Answers for voting round 10157'
 
 
     - name: Create pull request & notify all the stakeholders
