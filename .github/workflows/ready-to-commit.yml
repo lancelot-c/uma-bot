@@ -100,6 +100,14 @@ jobs:
         DISCORD_CHANNEL_DEV_WEBHOOK_URL: ${{ secrets.DISCORD_CHANNEL_DEV_WEBHOOK_URL }}
         ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
 
+
+    - name: Update TVL
+      continue-on-error: true # See https://stackoverflow.com/a/70048004
+      run: tsx ./uma-bot/smart-contract-calls/update-tvl.ts
+      env: # Set the secrets as an environment variable
+        UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
+        UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
         
     # See https://snyk.io/blog/how-to-add-playwright-tests-pr-ci-github-actions/
     - name: Upload test results
