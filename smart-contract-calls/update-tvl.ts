@@ -18,9 +18,13 @@ async function run() {
     let tvlHistory: any[] = (await redis.get("TVL_HISTORY") as any).all
     tvlHistory.push(newTvl)
 
+    const newTvlHistory = {
+        "all": tvlHistory
+    }
+
     try {
             
-        await redis.set("TVL_HISTORY", tvlHistory)
+        await redis.set("TVL_HISTORY", newTvlHistory)
 
     } catch (error) {
         
