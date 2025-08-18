@@ -32,7 +32,7 @@ export default defineConfig({
         headless: false,
 
         // We are using the locally deployed server
-        baseURL: 'http://localhost:3000',
+        baseURL: 'http://localhost:9999',
 
         trace: {
             'mode': 'retain-on-first-failure',
@@ -49,8 +49,8 @@ export default defineConfig({
 
     // Run your local dev server before starting the tests
     webServer: {
-        command: 'npm run start',
-        url: 'http://localhost:3000',
+        command: 'npm run serve:test-dapp',
+        url: 'http://localhost:9999',
         reuseExistingServer: true
     }
 });
