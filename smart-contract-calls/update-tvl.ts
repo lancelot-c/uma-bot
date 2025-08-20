@@ -1,5 +1,4 @@
 import { createRedisInstance, logError } from "./common";
-import { getCurrentUmaPrice } from "./update-uma-price";
 
 run();
 
@@ -11,17 +10,12 @@ async function run() {
     const totalStake = Math.round(members.map((m: any) => m.umaStake).reduce((partialSum, a) => partialSum + a, 0));
     // const currentTimestamp = Math.round(Date.now() / 1000)
     const currentDate = (new Date()).toISOString().split('T')[0]
-    const currentUmaPrice = await getCurrentUmaPrice()
+    const currentUmaPrice = await redis.get("UMA_PRICE") as number;
     
     let newTvl = {
         "t": currentDate,
-        "s": totalStake
-    }
-
-    if (currentUmaPrice) {
-        newTvl["p"] = currentUmaPrice
-    } else {
-        logError('currentUmaPrice is undefined')
+        "s": totalStake,
+        "p": currentUmaPrice
     }
 
     let tvlHistory: any[] = (await redis.get("TVL_HISTORY") as any).all
