@@ -264,6 +264,8 @@ export async function generateSalt(account: PrivateKeyAccount, request: PendingR
 export function encodePrice(answer: string, priceIdentifier: PriceIdentifier): bigint | undefined {
 
     console.log(`answer:\n${answer}\n`)
+    console.log(`priceIdentifier:\n${priceIdentifier}\n`)
+
     let encodedPrice: bigint | undefined = undefined;
 
     if (!answer) {
@@ -314,7 +316,7 @@ export function encodePrice(answer: string, priceIdentifier: PriceIdentifier): b
 
     } else if (priceIdentifier === "MULTIPLE_VALUES") {
 
-        if (Number.isInteger(answer)) {
+        if (!isNaN(Number(answer))) {
             encodedPrice = BigInt(answer);
         }
 
