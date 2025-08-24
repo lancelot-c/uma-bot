@@ -264,7 +264,6 @@ export async function generateSalt(account: PrivateKeyAccount, request: PendingR
 export function encodePrice(answer: string, priceIdentifier: PriceIdentifier): bigint | undefined {
 
     console.log(`answer:\n${answer}\n`)
-    console.log(`priceIdentifier:\n${priceIdentifier}\n`)
 
     let encodedPrice: bigint | undefined = undefined;
 
