@@ -16,11 +16,11 @@ export const voteCommittedEvent = 'event VoteCommitted(address indexed voter, ad
 export const voteRevealedEvent = 'event VoteRevealed(address indexed voter, address indexed caller, uint32 roundId, bytes32 indexed identifier, uint256 time, bytes ancillaryData, int256 price, uint128 numTokens)'
 
 export const supportedPriceIdentifiers = [
-    'YES_OR_NO_QUERY', // see https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-107.md
+    'YES_OR_NO_QUERY', // see spec at https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-107.md
     'ASSERT_TRUTH', // For Story Protocol
     'Admin', // Governance vote (i.e. "Gas Rebate Program Refund | Jan 2024 - Dec 2024" has price identifier "Admin 206")
-    'ACROSS-V2' // see https://github.com/UMAprotocol/UMIPs/blob/895287dedcd6e9cfee30b84137b5823a6549afbc/UMIPs/umip-179.md
-    // TODO => 'MULTIPLE_VALUES', // see https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-183.md
+    'ACROSS-V2', // see spec at https://github.com/UMAprotocol/UMIPs/blob/895287dedcd6e9cfee30b84137b5823a6549afbc/UMIPs/umip-179.md
+    'MULTIPLE_VALUES', // see voting round 10162 as an example && see spec at https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-183.md
 ] as const;
 export type PriceIdentifier = (typeof supportedPriceIdentifiers)[number];
 
@@ -43,8 +43,7 @@ export const P4_VALUE: bigint = BigInt(-5789604461865809771178549250434395392663
 export const ASSERT_TRUTH_FALSE: bigint = BigInt(0);
 export const ASSERT_TRUTH_TRUE: bigint = BigInt(1000000000000000000);
 
-// By default we accept all governance proposals
-export const ALWAYS_APPROVE_GOVERNANCE_PROPOSALS = false // Switch to false to enable customization
+export const ALWAYS_APPROVE_GOVERNANCE_PROPOSALS = false // Set to false to enable customization, set to true to accept all governance proposals
 export const GOVERNANCE_NO: bigint = BigInt(0);
 export const GOVERNANCE_YES: bigint = BigInt(1000000000000000000);
 
@@ -262,18 +261,15 @@ export async function generateSalt(account: PrivateKeyAccount, request: PendingR
 }
 
 // Return the encoded price as a bigint or undefined if the price couldn't be determined
-export function encodePrice(values: string[], priceIdentifier: PriceIdentifier): bigint | undefined {
+export function encodePrice(answer: string, priceIdentifier: PriceIdentifier): bigint | undefined {
 
+    console.log(`answer:\n${answer}\n`)
     let encodedPrice: bigint | undefined = undefined;
 
-    if (values.length == 0) {
+    if (!answer) {
         return encodedPrice
     }
 
-    const answer = values[0]
-    console.log(`answer:\n${answer}\n`)
-
-    // YES_OR_NO_QUERY, see https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-107.md
     if (priceIdentifier === "YES_OR_NO_QUERY") {
 
         if (answer === "P1") {
@@ -316,26 +312,13 @@ export function encodePrice(values: string[], priceIdentifier: PriceIdentifier):
             encodedPrice = ACROSS_INVALID
         }
 
+    } else if (priceIdentifier === "MULTIPLE_VALUES") {
+
+        if (Number.isInteger(answer)) {
+            encodedPrice = BigInt(answer);
+        }
+
     }
-
-    // MULTIPLE_VALUES, see https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-183.md
-    // else if (priceIdentifier === "MULTIPLE_VALUES") {
-
-    //     if (values.length > 7) {
-    //         throw new Error("Maximum of 7 values allowed");
-    //     }
-
-    //     for (let i = 0; i < values.length; i++) {
-    //         if (!Number.isInteger(values[i])) {
-    //             throw new Error("All values must be integers");
-    //         }
-    //         if (values[i] > 0xffffffff || values[i] < 0) {
-    //             throw new Error("Values must be uint32 (0 <= value <= 2^32 - 1)");
-    //         }
-    //         encodedPrice |= BigInt(values[i]) << BigInt(32 * i);
-    //     }
-
-    // }
 
     console.log(`price:\n${encodedPrice}\n`)
     return encodedPrice;
@@ -509,7 +492,7 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
             continue
         }
 
-        const price = encodePrice([answer.answer], decodedRequestIdentifier)
+        const price = encodePrice(answer.answer, decodedRequestIdentifier)
         if (price === undefined) {
             logError(`Price is undefined for request ${i + 1}`)
             continue
