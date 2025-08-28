@@ -707,7 +707,7 @@ export async function getAnswers(votingRound: number): Promise<Answer[] | undefi
 
         const response = await fetch(answersFileUrl);
         if (!response.ok) {
-            logError(`Response status: ${response.status}`);
+            logError(`fetch(answersFileUrl) failed. Answers file likely not found at ${answersFileUrl}`);
             return undefined
         }
     
