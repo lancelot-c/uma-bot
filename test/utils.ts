@@ -260,7 +260,7 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
     const viewDecodedAncillaryData = page.getByText('(view decoded)')
     const decodedAncillaryDataHeader = page.getByRole('heading', { name: 'Decoded ancillary data' })
     const decodedAncillaryDataDiv = decodedAncillaryDataHeader.locator("..") // `locator("..")` means "parent element"
-    const closePanelButton = page.getByRole('dialog').getByRole('button')
+    const closePanelButton = page.getByRole('dialog').getByRole('button').last()
     const paginationDropdown = page.getByRole('button', { name: 'results' })
     const paginationDropdownOption50 = page.getByRole('menuitem', { name: '50 results' })
 
