@@ -570,13 +570,13 @@ export async function removeDelegator(delegateAccount: PrivateKeyAccount, public
 export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccount[]> {
 
     const pendingMembers: any = (await redis.get("PENDING") as any).all
-    return pendingMembers.map((member: any) => privateKeyToAccount(`0x${decrypt(member.b as string)}`))
+    return pendingMembers.map((member: any) => privateKeyToAccount(decrypt(member.b as string) as `0x${string}`))
 
 }
 
 export function getDelegatePrivateKeys(): `0x${string}`[] {
 
-    return (process.env.PRIVATE_KEYS as string).split(',').map(key => `0x${decrypt(key)}`) as `0x${string}`[]
+    return (process.env.PRIVATE_KEYS as string).split(',').map(key => decrypt(key)) as `0x${string}`[]
 
 }
 
@@ -592,7 +592,7 @@ export function getDelegateAddresses(): `0x${string}`[] {
 
 }
 
-export async function getLogs(eventAbiItem: string, args: any, publicClient: PublicClient, days?: number): Promise<any> {
+export async function getLogs(eventAbiItem: string, args: any, publicClient: PublicClient, days?: number): Promise<any[]> {
 
     return await publicClient.getLogs({
         address: umaContractAddress,
@@ -662,10 +662,10 @@ export async function getDelegatorsFromDelegates(redis: Redis, delegateAddresses
     const mapping: { [delegate: `0x${string}`]: `0x${string}` } = {}
 
     delegateAddresses.forEach(delegateAddress => {
-        const poolMember = poolMembers.find(m => `0x${m.delegate}` === delegateAddress)
+        const poolMember = poolMembers.find(m => m.delegate === delegateAddress)
         const delegatorFound = !!poolMember
 
-        const delegatorAddress: `0x${string}` = delegatorFound ? `0x${poolMember.delegator}` : ZERO_ADDRESS
+        const delegatorAddress: `0x${string}` = delegatorFound ? poolMember.delegator : ZERO_ADDRESS
         mapping[delegateAddress] = delegatorAddress
     })
 

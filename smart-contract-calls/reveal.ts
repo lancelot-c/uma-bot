@@ -1,12 +1,15 @@
 import { encodeFunctionData, PrivateKeyAccount } from 'viem'
 import { umaContractAbi } from './../test/umaAbi'
 import { searchForEvent, createPublicEthClient, createRedisInstance, createWalletEthClient, generateSalt, getCurrentPhase, getDelegateAccounts, getDelegatorsFromDelegates, getFormattedRequests, getEventLogs, sendMulticallTransaction, simulateTransaction, ZERO_ADDRESS, EventSummary, shouldSkipWallet, takeActionForAccounts, logError, voteRevealedEvent, voteCommittedEvent, umaRocksAlreadyDidSomething, TransactionHash } from './common'
-import { addFailedWallet, addSkippedWallet, addSuccessfulWallet } from '../test/utils'
+import { addSkippedWallet, addSuccessfulWallet } from '../test/utils'
 import fs from 'fs'
 import 'dotenv/config'
 
 const returnValue = await run()
-fs.appendFileSync(process.env.GITHUB_OUTPUT as string, `revelead=${returnValue}\n`)
+
+if (process.env.GITHUB_OUTPUT) {
+    fs.appendFileSync(process.env.GITHUB_OUTPUT, `revelead=${returnValue}\n`)
+}
 
 // const githubOutputData = fs.readFileSync(process.env.GITHUB_OUTPUT as string, { encoding: 'utf8', flag: 'r' });
 // console.log(githubOutputData);
