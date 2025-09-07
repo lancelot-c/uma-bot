@@ -103,34 +103,31 @@ async function acceptDelegationRequest(delegateAddress: `0x${string}`, stakerAdd
 
     if (successful) {
 
-        const delegateAddressString: string = delegateAddress.replace('0x', '')
-        const stakerAddressString: string = stakerAddress.replace('0x', '')
-
         // Post on UMA.rocks Discord
-        const err = await postNewMemberOnDiscord(stakerAddressString, umaStake)
+        const err = await postNewMemberOnDiscord(stakerAddress, umaStake)
         if (err) {
             logError(err)
         }
 
-        await addToDatabase(delegateAddressString, stakerAddressString, umaStake) 
+        await addToDatabase(delegateAddress, stakerAddress, umaStake) 
     }
 
 }
 
-async function addToDatabase(delegateAddressString: string, stakerAddressString: string, umaStake: number): Promise<void> {
+async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x${string}`, umaStake: number): Promise<void> {
     
-    console.log(`Processing new staker 0x${stakerAddressString} with delegate 0x${delegateAddressString}`)
+    console.log(`Processing new staker ${stakerAddress} with delegate ${delegateAddress}`)
 
-    const encryptedPrivateKey = await getDelegateEncryptedPrivateKey(delegateAddressString)
+    const encryptedPrivateKey = await getDelegateEncryptedPrivateKey(delegateAddress)
 
     if (!encryptedPrivateKey) {
-        logError(`Couldn't retrieve delegate private key.`)
+        logError(`Couldn't retrieve encrypted delegate private key for delegate ${delegateAddress}`)
         return;
     }
 
 
     // Update KV
-    let [newValue, err] = await updateKV(encryptedPrivateKey, delegateAddressString, stakerAddressString, umaStake)
+    let [newValue, err] = await updateKV(encryptedPrivateKey, delegateAddress, stakerAddress, umaStake)
     if (err) {
         logError(err)
         return
@@ -151,11 +148,11 @@ async function addToDatabase(delegateAddressString: string, stakerAddressString:
 
 }
 
-async function getDelegateEncryptedPrivateKey(delegateAddress: string): Promise<string | undefined> {
+async function getDelegateEncryptedPrivateKey(delegateAddress: `0x${string}`): Promise<string | undefined> {
 
     const pending: any = await redis.get("PENDING")
-    const delegates: string[] = pending.all.map((elmt: any) => elmt.a.toLowerCase())
-    delegateAddress = delegateAddress.replace('0x', '').toLowerCase()
+    const delegates: `0x${string}`[] = pending.all.map((elmt: any) => elmt.a.toLowerCase())
+    delegateAddress = delegateAddress.toLowerCase() as `0x${string}`
 
     const index = delegates.indexOf(delegateAddress)
 
@@ -170,16 +167,17 @@ async function getDelegateEncryptedPrivateKey(delegateAddress: string): Promise<
 
 }
 
-async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: string, stakerAddress: string, umaStake: number): Promise<[string, string]> {
+async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: `0x${string}`, stakerAddress: `0x${string}`, umaStake: number): Promise<[string, string]> {
 
     let newKValue: string = ''
     let errorMessage: string = ''
 
     // Add to K
-    console.log('Add to K')
+    const kvKey = 'K'
+    console.log(`Add to ${kvKey}`)
+    
     try {
 
-        const kvKey = 'K'
         let oldValue = await redis.get(kvKey) as string;
         newKValue = oldValue
 
@@ -197,7 +195,7 @@ async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: st
         }
 
     } catch (err) {
-        errorMessage = `Could not add new member to K`
+        errorMessage = `Could not add new member to ${kvKey}`
         return [newKValue, errorMessage]
     }
 
@@ -279,7 +277,7 @@ function numberWithCommas(x: number): string {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-async function postNewMemberOnDiscord(stakerAddress: string, umaStake: number): Promise<string> {
+async function postNewMemberOnDiscord(stakerAddress: `0x${string}`, umaStake: number): Promise<string> {
 
     // Post on UMA.rocks Discord
     console.log(`> Post message on Discord`)
@@ -288,7 +286,7 @@ async function postNewMemberOnDiscord(stakerAddress: string, umaStake: number): 
 
     const embed = {
         "title": `Someone just joined the pool with ${numberWithCommas(umaStake)} UMA ($${numberWithCommas(Math.round(umaStake * umaPrice))}) 🥳`,
-        "description": `Welcome UMA holder 0x${stakerAddress} 👋`,
+        "description": `Welcome UMA holder ${stakerAddress} 👋`,
         "color": 1467700,  // dark green - decimal index of a color, see https://www.spycolor.com
     }
 

@@ -99,7 +99,7 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
 
         kvKey = 'MEMBERS'
         members = (await redis.get(kvKey) as any).all as any[]
-        indexToRemove = members.findIndex(m => `0x${m.delegate}`.toLowerCase() == delegateAddress.toLowerCase())
+        indexToRemove = members.findIndex(m => m.delegate.toLowerCase() == delegateAddress.toLowerCase())
 
         if (indexToRemove == -1) {
             logError(`Cannot find ${delegateAddress} in Redis MEMBERS key`)
@@ -108,7 +108,7 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
 
         const memberToRemove = members[indexToRemove]
         delegatePrivateKey = memberToRemove.k as string
-        delegatorAddress = `0x${memberToRemove.delegator}`
+        delegatorAddress = memberToRemove.delegator
         signature = memberToRemove.signature
 
         members.splice(indexToRemove, 1)
@@ -142,7 +142,7 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
     kvKey = 'PENDING'
     const oldPending: any[] = (await redis.get(kvKey) as any).all
     const newDelegate = {
-        a: delegateAddress.slice(2), // removes '0x'
+        a: delegateAddress,
         b: delegatePrivateKey,
         signature
     };
@@ -250,7 +250,7 @@ export async function updateStakes(delegateInfos: DelegateMetadata[]): Promise<a
 
     oldMembers.map((member) => {
 
-        const foundStake = delegateInfos.find(i => i && i.stakerAddress && i.stakerAddress.toLowerCase() == `0x${member.delegator}`.toLowerCase())
+        const foundStake = delegateInfos.find(i => i && i.stakerAddress && i.stakerAddress.toLowerCase() == member.delegator.toLowerCase())
 
         if (foundStake) {
             member.umaStake = foundStake.umaStake
