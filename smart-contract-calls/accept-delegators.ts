@@ -24,7 +24,7 @@ for (let i = 0; i < pendingAccounts.length; i++) {
     const args = {
         delegate: delegateAddress
     }
-    const logs = await getLogs(delegateSetEvent, args, publicClient)
+    const logs = await getLogs(delegateSetEvent, args, publicClient, 4)
 
 
     if (logs.length > 0) {
@@ -33,7 +33,7 @@ for (let i = 0; i < pendingAccounts.length; i++) {
         // console.log('Latest DelegateSet event:')
         // console.log(latestLog);
 
-        const latestDelegator = latestLog.args.delegator
+        const latestDelegator = latestLog.args.delegator as `0x${string}`
         console.log(`Delegation request found from delegator ${latestDelegator}`)
 
 
@@ -175,7 +175,7 @@ async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: `0
     // Add to K
     const kvKey = 'K'
     console.log(`Add to ${kvKey}`)
-    
+
     try {
 
         let oldValue = await redis.get(kvKey) as string;
