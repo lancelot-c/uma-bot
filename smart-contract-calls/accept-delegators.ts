@@ -24,7 +24,7 @@ for (let i = 0; i < pendingAccounts.length; i++) {
     const args = {
         delegate: delegateAddress
     }
-    const logs = await getLogs(delegateSetEvent, args, publicClient, 4)
+    const logs = await getLogs(delegateSetEvent, args, publicClient, 5)
 
 
     if (logs.length > 0) {
