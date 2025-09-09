@@ -594,11 +594,14 @@ export function getDelegateAddresses(): `0x${string}`[] {
 
 export async function getLogs(eventAbiItem: string, args: any, publicClient: PublicClient, days?: number): Promise<any[]> {
 
+    // Try to set this value as high as possible to avoid reaching rate limits on RPC providers
+    const fromBlock = await blockNumberFromXDaysAgo(days || 3, publicClient)
+
     return await publicClient.getLogs({
         address: umaContractAddress,
         event: parseAbiItem(eventAbiItem) as any,
         args,
-        fromBlock: await blockNumberFromXDaysAgo(days || 2, publicClient), // to avoid reaching rate limits on RPC providers
+        fromBlock,
         toBlock: 'latest',
         strict: true
     })
