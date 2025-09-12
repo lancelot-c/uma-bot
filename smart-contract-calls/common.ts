@@ -463,6 +463,11 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
 
     if (requests.length != answers.length) {
         logError(`Number of requests (${requests.length}) is different from number of answers in answers.json (${answers.length})`)
+
+        requests.forEach((r, i) => {
+            console.log(`#${i}\n\nancillaryData: ${r.ancillaryData}\n\nidentifier: ${r.identifier}\n\nisGovernance: ${r.isGovernance}\n\nlastVotingRound: ${r.lastVotingRound}\n\nrollCount: ${r.rollCount}\n\ntime: ${r.time}\n\n\n`)
+        })
+
         return []
     }
 
