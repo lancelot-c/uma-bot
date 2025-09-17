@@ -23,6 +23,7 @@ Then click `Commit changes...` at the top. A popup appears, click `Commit change
 
 <img width="574" height="589" alt="image" src="https://github.com/user-attachments/assets/d20353d0-f4d9-4c5b-a504-a7dc008b5f59" />
 
+Please [approve](#approve-the-answers) your own commit so that the next reviewer can directly approve and merge the pull request right away, speeding up the review process and avoiding unnecessary back-and-forth reviews. 
 
 ## Solve disagreements with comments
 If you disagree with an answer, you can add a comment on the corresponding line by clicking the `+` icon at the beginning of the line, then write your comment and click `Add a single comment`.
