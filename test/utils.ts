@@ -256,10 +256,9 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
     const panelHeader = page.locator('#panel-title')
     const detailsTab = page.getByRole('tab', { name: 'Details' })
     // const joinDiscordDetailsTab = page.getByRole('link', { name: 'Join the discussion on Discord' })
-    const viewRawAncillaryData = page.getByText('(view raw)')
-    const viewDecodedAncillaryData = page.getByText('(view decoded)')
-    const decodedAncillaryDataHeader = page.getByRole('heading', { name: 'Decoded ancillary data' })
-    const decodedAncillaryDataDiv = decodedAncillaryDataHeader.locator("..") // `locator("..")` means "parent element"
+    const viewRawAncillaryData = page.getByText('View Raw')
+    // const viewDecodedAncillaryData = page.getByText('View Decoded')
+    const decodedAncillaryDataDiv = page.locator("pre").first()
     const closePanelButton = page.getByRole('dialog').getByRole('button').last()
     const paginationDropdown = page.getByRole('button', { name: 'results' })
     const paginationDropdownOption50 = page.getByRole('menuitem', { name: '50 results' })
@@ -331,6 +330,7 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
             console.log(`> Get question string`)
             const question = (await panelHeader.innerHTML()).split('<div ')[0]
             answer.question = question;
+            console.log(`Retrieved question: ${question}`)
 
 
             // Get dispute ancillary data
@@ -338,28 +338,23 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
             await detailsTab.click();
 
             console.log(`> Click on button to view raw ancillary data`)
-            try {
-                await viewRawAncillaryData.or(viewDecodedAncillaryData).waitFor({ timeout: 20000 })
-            } catch (error: any) {
-                logError(error)
-            }
+            await viewRawAncillaryData.isVisible({ timeout: 20000 })
 
             // We only need to click once for the first dispute as the right panel is preserved for the next disputes
-            if (await viewRawAncillaryData.isVisible()) {
+            if (d == 0) {
                 await viewRawAncillaryData.click()
             }
+
             
             await expect(decodedAncillaryDataDiv).toBeVisible({ timeout: 20000 });
-            const ancillaryData: `0x${string}` = `0x${((await decodedAncillaryDataDiv.textContent({ timeout: 20000 })) || "_0x_").split('0x')[1]}`
-            /* Example of decodedAncillaryDataDiv.textContent() :
-            ' Decoded ancillary data (view decoded)0x616e63696c6c61727944617461486173683a366266303262616531663562363261376332643264336265656630366635636561653039656632623338633531363166613931336665666435363134653131382c6368696c64426c6f636b4e756d6265723a37303333353039372c6368696c644f7261636c653a616336303335336135343837336334343631303132313638323961366139386364626263336633642c6368696c645265717565737465723a656533616665333437643563373433313730343165323631386334393533346461663838376332342c6368696c64436861696e49643a313337'
-            */
+            const ancillaryData: `0x${string}` = ((await decodedAncillaryDataDiv.textContent({ timeout: 20000 })) || "0x") as `0x${string}`
 
-            if (ancillaryData == '0x_') {
+            if (ancillaryData == '0x') {
                 logError(`Couldn't retrieve ancillary data`);
             }
 
             answer.ancillaryData = ancillaryData
+            console.log(`Retrieved ancillaryData: ${ancillaryData}`)
 
 
             // Get dispute price identifier
