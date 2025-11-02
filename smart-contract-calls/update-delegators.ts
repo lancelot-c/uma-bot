@@ -169,11 +169,14 @@ export function shouldRemoveDelegator(infos: DelegateMetadata): boolean {
     /* ⚠️ IMPORTANT: Protection to avoid removing delegators if the query to the smart contract failed.
     Indeed, it could simply be a Viem bug or RPC client downtime.
     Therefore, it's not a proof that the delegator is invalid and we shouldn't remove it. */
-    if (!infos || infos.stakerAddress === undefined || infos.umaStake === undefined || infos.existingDelegate === undefined || process.env.MINIMUM_UMA_STAKE === undefined || Number(process.env.MINIMUM_UMA_STAKE) < 500) {
+    if (!infos || infos.stakerAddress === undefined || infos.umaStake === undefined || infos.existingDelegate === undefined || process.env.MINIMUM_UMA_STAKE === undefined || Number(process.env.MINIMUM_UMA_STAKE) == 0 || Number(process.env.MINIMUM_UMA_STAKE) != 1000) {
         return false
     }
 
-    return infos.existingDelegate.toLowerCase() != infos.delegateAddress.toLowerCase() || infos.umaStake < Number(process.env.MINIMUM_UMA_STAKE)
+    const isNotDelegatedToUmaRocks = infos.existingDelegate.toLowerCase() != infos.delegateAddress.toLowerCase()
+    const hasNotEnoughStake = infos.umaStake < 500 // TODO after Nov. 5: replace "500" by "Number(process.env.MINIMUM_UMA_STAKE)"
+
+    return isNotDelegatedToUmaRocks || hasNotEnoughStake
 
 }
 
