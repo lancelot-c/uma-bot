@@ -174,7 +174,7 @@ export function shouldRemoveDelegator(infos: DelegateMetadata): boolean {
     }
 
     const isNotDelegatedToUmaRocks = infos.existingDelegate.toLowerCase() != infos.delegateAddress.toLowerCase()
-    const hasNotEnoughStake = infos.umaStake < 500 // TODO after Nov. 5: replace "500" by "Number(process.env.MINIMUM_UMA_STAKE)"
+    const hasNotEnoughStake = infos.umaStake < Number(process.env.MINIMUM_UMA_STAKE)
 
     return isNotDelegatedToUmaRocks || hasNotEnoughStake
 
