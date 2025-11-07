@@ -15,14 +15,14 @@ if (requests.length == 0) {
     throw Error('No pending request detected. Exit job.')
 }
 
-const delegateAccounts = getDelegateAccounts()
+const redis = createRedisInstance()
+const delegateAccounts = await getDelegateAccounts(redis)
 
 if (delegateAccounts.length == 0) {
     throw Error('No delegate account detected. Exit job.')
 }
 
 
-const redis = createRedisInstance()
 const delegateToDelegator = await getDelegatorsFromDelegates(redis, delegateAccounts.map(a => a.address))
 const roundId = requests[0].roundId
 const nbDisputes = requests.length

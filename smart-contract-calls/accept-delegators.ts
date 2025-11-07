@@ -1,7 +1,7 @@
 import { PrivateKeyAccount, PublicClient, WalletClient } from 'viem'
 import { umaContractAbi } from '../test/umaAbi'
 import { umaContractAddress, setDelegator, createWalletEthClient, createPublicEthClient, createRedisInstance, getPendingAccounts, logError, getLogs } from './common'
-import { createOctokit, updateGithubSecret } from './github'
+import { createOctokit } from './github'
 
 const redis = createRedisInstance()
 const pendingAccounts = await getPendingAccounts(redis)
@@ -133,18 +133,19 @@ async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x$
         return
     }
 
+    // DEPRECATED: no more Github Secret
     // Update Github Secret
-    if (newValue) {
+    // if (newValue) {
         
-        const octokit = createOctokit()
-        const success = await updateGithubSecret(newValue, octokit)
+    //     const octokit = createOctokit()
+    //     const success = await updateGithubSecret(newValue, octokit)
 
-        if (!success) {
-            logError(`Couldn't update Github Secret`)
-            return
-        }
+    //     if (!success) {
+    //         logError(`Couldn't update Github Secret`)
+    //         return
+    //     }
 
-    }
+    // }
 
 }
 
@@ -172,8 +173,8 @@ async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: `0
     let newKValue: string = ''
     let errorMessage: string = ''
 
-    // Add to K
-    const kvKey = 'K'
+    // Add to PRIVATE_KEYS
+    const kvKey = 'PRIVATE_KEYS'
     console.log(`Add to ${kvKey}`)
 
     try {
@@ -248,7 +249,7 @@ async function updateKV(encryptedDelegatePrivateKey: string, delegateAddress: `0
 
         const newMember = {
             delegate: delegateAddress,
-            k: encryptedDelegatePrivateKey,
+            pk: encryptedDelegatePrivateKey,
             delegator: stakerAddress,
             umaStake,
             signature

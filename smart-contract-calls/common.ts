@@ -579,21 +579,27 @@ export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccoun
 
 }
 
-export function getDelegatePrivateKeys(): `0x${string}`[] {
+export async function getEncryptedPrivateKeys(redis: Redis): Promise<string> {
 
-    return (process.env.PRIVATE_KEYS as string).split(',').map(key => decrypt(key.trim())) as `0x${string}`[]
-
-}
-
-export function getDelegateAccounts(): PrivateKeyAccount[] {
-
-    return getDelegatePrivateKeys().map(key => privateKeyToAccount(key))
+    return (await redis.get("PRIVATE_KEYS") as string)
 
 }
 
-export function getDelegateAddresses(): `0x${string}`[] {
+export async function getDelegatePrivateKeys(redis: Redis): Promise<`0x${string}`[]> {
 
-    return getDelegateAccounts().map(account => account.address)
+    return (await getEncryptedPrivateKeys(redis)).split(',').map(key => decrypt(key.trim())) as `0x${string}`[]
+
+}
+
+export async function getDelegateAccounts(redis: Redis): Promise<PrivateKeyAccount[]> {
+
+    return (await getDelegatePrivateKeys(redis)).map(key => privateKeyToAccount(key))
+
+}
+
+export async function getDelegateAddresses(redis: Redis): Promise<`0x${string}`[]> {
+
+    return (await getDelegateAccounts(redis)).map(account => account.address)
 
 }
 

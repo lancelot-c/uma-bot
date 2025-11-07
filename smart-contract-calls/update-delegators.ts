@@ -2,10 +2,11 @@ import { PrivateKeyAccount, PublicClient, WalletClient } from 'viem'
 import { umaContractAbi } from '../test/umaAbi'
 import { umaContractAddress, createPublicEthClient, createRedisInstance, logError, getDelegateAccounts, createWalletEthClient, ZERO_ADDRESS, removeDelegator } from './common'
 import { Redis } from '@upstash/redis'
-import { createOctokit, updateGithubSecret } from './github'
+// import { createOctokit } from './github'
 
 
-const delegateAccounts = getDelegateAccounts()
+const redis = createRedisInstance()
+const delegateAccounts = await getDelegateAccounts(redis)
 
 if (delegateAccounts.length == 0) {
     throw Error('No delegate account detected. Exit job.')
@@ -13,7 +14,6 @@ if (delegateAccounts.length == 0) {
 
 const publicClient = createPublicEthClient()
 const walletClient = createWalletEthClient()
-const redis = createRedisInstance()
 
 type DelegateMetadata = {
     delegateAddress: `0x${string}`
@@ -69,14 +69,14 @@ export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, re
     // Update Redis
     let [newK, delegatorAddress] = await deleteMemberFromRedis(delegateAddress, redis)
     
-    
+    // DEPRECATED: no more Github Secret
     // Update Github Secret
-    if (newK) {
+    // if (newK) {
         
-        const octokit = createOctokit()
-        await updateGithubSecret(newK, octokit)
+    //     const octokit = createOctokit()
+    //     await updateGithubSecret(newK, octokit)
 
-    }
+    // }
 
     return delegatorAddress
 }
@@ -107,7 +107,7 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
         }
 
         const memberToRemove = members[indexToRemove]
-        delegatePrivateKey = memberToRemove.k as string
+        delegatePrivateKey = memberToRemove.pk as string
         delegatorAddress = memberToRemove.delegator
         signature = memberToRemove.signature
 
@@ -124,15 +124,15 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
     }
 
 
-    // Remove from K
+    // Remove from PRIVATE_KEYS
     try {
 
-        kvKey = 'K'
-        newK = members.map((m: any) => m.k as string).join(',')
+        kvKey = 'PRIVATE_KEYS'
+        newK = members.map((m: any) => m.pk as string).join(',')
         await redis.set(kvKey, newK);
 
     } catch (err) {
-        logError(`Cannot remove private key of ${delegateAddress} from Redis K key`)
+        logError(`Cannot remove private key of ${delegateAddress} from Redis PRIVATE_KEYS key`)
         return [newK, delegatorAddress]
     }
 

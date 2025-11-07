@@ -41,7 +41,6 @@ jobs:
       run: tsx ./uma-bot/smart-contract-calls/reveal.ts
       # run: echo "revelead='$(tsx ./uma-bot/smart-contract-calls/reveal.ts)'" >> "$GITHUB_OUTPUT"
       env:
-        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
         UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
@@ -53,7 +52,6 @@ jobs:
       continue-on-error: true # See https://stackoverflow.com/a/70048004
       run: tsx ./uma-bot/smart-contract-calls/summary.ts
       env: # Set the secret as an environment variable
-        PRIVATE_KEYS: ${{ secrets.PRIVATE_KEYS }}
         RPC_URL: ${{ secrets.RPC_URL }}
         UPSTASH_URL: ${{ secrets.UPSTASH_URL }}
         UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}

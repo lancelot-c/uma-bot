@@ -31,14 +31,14 @@ async function run(): Promise<string> {
         return '0'
     }
 
-    const delegateAccounts = getDelegateAccounts()
+    const redis = createRedisInstance()
+    const delegateAccounts = await getDelegateAccounts(redis)
 
     if (delegateAccounts.length == 0) {
         console.error('No delegate account detected. Exit job.')
         return '0'
     }
 
-    const redis = createRedisInstance()
     const delegateToDelegator = await getDelegatorsFromDelegates(redis, delegateAccounts.map(a => a.address))
     const roundId = requests[0].roundId
     const nbDisputes = requests.length
