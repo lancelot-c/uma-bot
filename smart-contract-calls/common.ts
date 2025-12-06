@@ -608,14 +608,21 @@ export async function getLogs(eventAbiItem: string, args: any, publicClient: Pub
     // Try to set this value as high as possible to avoid reaching rate limits on RPC providers
     const fromBlock = await blockNumberFromXDaysAgo(days || 3, publicClient)
 
-    return await publicClient.getLogs({
-        address: umaContractAddress,
-        event: parseAbiItem(eventAbiItem) as any,
-        args,
-        fromBlock,
-        toBlock: 'latest',
-        strict: true
-    })
+    try {
+
+        return await publicClient.getLogs({
+            address: umaContractAddress,
+            event: parseAbiItem(eventAbiItem) as any,
+            args,
+            fromBlock,
+            toBlock: 'latest',
+            strict: true
+        })
+
+    } catch (error: any) {
+        logError(error.message);
+        return []
+    }
 
 }
 

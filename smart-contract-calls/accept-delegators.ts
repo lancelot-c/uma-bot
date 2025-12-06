@@ -133,20 +133,6 @@ async function addToDatabase(delegateAddress: `0x${string}`, stakerAddress: `0x$
         return
     }
 
-    // DEPRECATED: no more Github Secret
-    // Update Github Secret
-    // if (newValue) {
-        
-    //     const octokit = createOctokit()
-    //     const success = await updateGithubSecret(newValue, octokit)
-
-    //     if (!success) {
-    //         logError(`Couldn't update Github Secret`)
-    //         return
-    //     }
-
-    // }
-
 }
 
 async function getDelegateEncryptedPrivateKey(delegateAddress: `0x${string}`): Promise<string | undefined> {
