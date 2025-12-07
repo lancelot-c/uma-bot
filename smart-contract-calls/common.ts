@@ -52,7 +52,7 @@ export const ACROSS_VALID: bigint = BigInt(1000000000000000000);
 
 
 export const TIMEOUT_ACTION = 3*60; // in seconds
-export const DELAY_ACTION = 2; // in seconds (TODO: progressively lower this to 0 to perform actions as fast as possible)
+export const DELAY_ACTION = 0; // in seconds (TODO: progressively lower this to 0 to perform actions as fast as possible)
 export const TIMEOUT_RECEIPT = 10*60; // in seconds
 export const GAS_PREMIUM = BigInt(40) // add gas premium to make sure transactions do not fail
 
@@ -810,7 +810,7 @@ export async function takeActionForAccounts(action: (account: PrivateKeyAccount,
 
             hash = result
 
-            if (isntLastAction) {
+            if (isntLastAction && DELAY_ACTION > 0) {
                 await wait(DELAY_ACTION)
             }
 
