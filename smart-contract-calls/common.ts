@@ -579,15 +579,15 @@ export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccoun
 
 }
 
-export async function getEncryptedPrivateKeys(redis: Redis): Promise<string> {
+export async function getEncryptedPrivateKeys(redis: Redis): Promise<string[]> {
 
-    return (await redis.get("PRIVATE_KEYS") as string)
+    return ((await redis.get("MEMBERS") as any).all as any[]).map(m => m.pk as string)
 
 }
 
 export async function getDelegatePrivateKeys(redis: Redis): Promise<`0x${string}`[]> {
 
-    return (await getEncryptedPrivateKeys(redis)).split(',').map(key => decrypt(key.trim())) as `0x${string}`[]
+    return (await getEncryptedPrivateKeys(redis)).map(key => decrypt(key.trim())) as `0x${string}`[]
 
 }
 

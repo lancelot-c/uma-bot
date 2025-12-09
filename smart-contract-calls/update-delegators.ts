@@ -124,20 +124,6 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
     }
 
 
-    // Remove from PRIVATE_KEYS
-    try {
-
-        kvKey = 'PRIVATE_KEYS'
-        newK = members.map((m: any) => m.pk as string).join(',')
-        await redis.set(kvKey, newK);
-
-    } catch (err) {
-        logError(`Cannot remove private key of ${delegateAddress} from Redis PRIVATE_KEYS key`)
-        return [newK, delegatorAddress]
-    }
-
-
-
     // Add to PENDING
     kvKey = 'PENDING'
     const oldPending: any[] = (await redis.get(kvKey) as any).all
