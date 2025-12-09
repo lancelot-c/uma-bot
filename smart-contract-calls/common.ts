@@ -564,20 +564,15 @@ export async function setDelegator(delegatorAddress: `0x${string}`, delegateAcco
 
 }
 
+/* DEPRECATED: no need to remove the delegator anymore, we are enabling him to rejoin anytime by increasing its stake again AND/OR making another delegation request to us */
+
 /* ⚠️ WARNING: this function should be called very carefully and strong checks should be made before calling it
  as there is no way to recover delegators once they are removed except by manually asking them to rejoin the pool */
-export async function removeDelegator(delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<TransactionHash> {
+// export async function removeDelegator(delegateAccount: PrivateKeyAccount, publicClient: PublicClient, walletClient: WalletClient): Promise<TransactionHash> {
 
-    return await setDelegator(ZERO_ADDRESS, delegateAccount, publicClient, walletClient)
+//     return await setDelegator(ZERO_ADDRESS, delegateAccount, publicClient, walletClient)
 
-}
-
-export async function getPendingAccounts(redis: Redis): Promise<PrivateKeyAccount[]> {
-
-    const pendingMembers: any = (await redis.get("PENDING") as any).all
-    return pendingMembers.map((member: any) => privateKeyToAccount(decrypt(member.b as string) as `0x${string}`))
-
-}
+// }
 
 export async function getEncryptedPrivateKeys(redis: Redis): Promise<string[]> {
 

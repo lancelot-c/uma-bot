@@ -1,8 +1,7 @@
 import { PrivateKeyAccount, PublicClient, WalletClient } from 'viem'
 import { umaContractAbi } from '../test/umaAbi'
-import { umaContractAddress, createPublicEthClient, createRedisInstance, logError, getDelegateAccounts, createWalletEthClient, ZERO_ADDRESS, removeDelegator } from './common'
+import { umaContractAddress, createPublicEthClient, createRedisInstance, logError, getDelegateAccounts, createWalletEthClient, ZERO_ADDRESS } from './common'
 import { Redis } from '@upstash/redis'
-// import { createOctokit } from './github'
 
 
 const redis = createRedisInstance()
@@ -48,8 +47,9 @@ export async function removeDelegatorIfInvalid(delegateAccount: PrivateKeyAccoun
         // Remove from our backend
         await deleteMemberFromBackend(delegateAddress, redis)
 
-        // Uncomment line below to remove delegator from UMA smart contract
-        await removeDelegator(delegateAccount, publicClient, walletClient)
+        /* DEPRECATED: no need to remove the delegator anymore, we are enabling him to rejoin anytime by increasing its stake again AND/OR making another delegation request to us */
+        // Remove delegator from UMA smart contract
+        // await removeDelegator(delegateAccount, publicClient, walletClient)
 
         // Post message on Discord
         // const errorTitle = `Someone just left the pool 😢`
@@ -66,32 +66,12 @@ export async function removeDelegatorIfInvalid(delegateAccount: PrivateKeyAccoun
 // Returns removed delegator address
 export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, redis: Redis): Promise<`0x${string}`> {
 
-    // Update Redis
-    let [newK, delegatorAddress] = await deleteMemberFromRedis(delegateAddress, redis)
-    
-    // DEPRECATED: no more Github Secret
-    // Update Github Secret
-    // if (newK) {
-        
-    //     const octokit = createOctokit()
-    //     await updateGithubSecret(newK, octokit)
-
-    // }
-
-    return delegatorAddress
-}
-
-
-export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redis: Redis): Promise<[newK: string, delegatorAddress: `0x${string}`]> {
-
-    let newK: string = ''
     let delegatorAddress: `0x${string}` = ZERO_ADDRESS
 
-    let delegatePrivateKey = ''
-    let indexToRemove = -1
-    let kvKey;
-    let signature = 0
-    let members
+    let delegateEncryptedPrivateKey: string = ''
+    let indexToRemove: number = -1
+    let kvKey: string = ''
+    let members: any[] = []
 
 
     // Remove from MEMBERS
@@ -103,13 +83,12 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
 
         if (indexToRemove == -1) {
             logError(`Cannot find ${delegateAddress} in Redis MEMBERS key`)
-            return [newK, delegatorAddress]
+            return delegatorAddress
         }
 
         const memberToRemove = members[indexToRemove]
-        delegatePrivateKey = memberToRemove.pk as string
+        delegateEncryptedPrivateKey = memberToRemove.pk as string
         delegatorAddress = memberToRemove.delegator
-        signature = memberToRemove.signature
 
         members.splice(indexToRemove, 1)
         const newMembers = {
@@ -120,17 +99,17 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
 
     } catch (err) {
         logError(`Cannot remove ${delegateAddress} from Redis MEMBERS key`)
-        return [newK, delegatorAddress]
+        return delegatorAddress
     }
 
 
     // Add to PENDING
     kvKey = 'PENDING'
-    const oldPending: any[] = (await redis.get(kvKey) as any).all
+    const oldPending: any[] = (await redis.get(kvKey) as any).all as any[]
     const newDelegate = {
-        a: delegateAddress,
-        b: delegatePrivateKey,
-        signature
+        delegate: delegateAddress,
+        pk: delegateEncryptedPrivateKey,
+        delegator: delegatorAddress
     };
     oldPending.push(newDelegate)
 
@@ -142,12 +121,14 @@ export async function deleteMemberFromRedis(delegateAddress: `0x${string}`, redi
         await redis.set("PENDING", newPending)
     } catch (err) {
         logError(`Cannot add delegate ${delegateAddress} to Redis PENDING key`)
-        return [newK, delegatorAddress]
+        return delegatorAddress
     }
 
 
-    return [newK, delegatorAddress]
+    return delegatorAddress
+    
 }
+
 
 // Checks if the delegator still stakes, has the minimum UMA stake, & still has UMA.rocks as a delegate
 export function shouldRemoveDelegator(infos: DelegateMetadata): boolean {
