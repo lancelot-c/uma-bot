@@ -40,12 +40,12 @@ await updateStakes(delegateInfos)
 export async function removeDelegatorIfInvalid(delegateAccount: PrivateKeyAccount, delegateInfos: DelegateMetadata, redis: Redis, publicClient: PublicClient, walletClient: WalletClient): Promise<boolean> {
 
     const delegateAddress = delegateAccount.address
-    const shouldRemove = shouldRemoveDelegator(delegateInfos)
+    const [shouldBeRemoved, shouldBeRefunded] = shouldRemoveDelegator(delegateInfos)
 
-    if (shouldRemove) {
+    if (shouldBeRemoved) {
 
         // Remove from our backend
-        await deleteMemberFromBackend(delegateAddress, redis)
+        await deleteMemberFromBackend(delegateAddress, shouldBeRefunded, redis)
 
         /* DEPRECATED: no need to remove the delegator anymore, we are enabling him to rejoin anytime by increasing its stake again AND/OR making another delegation request to us */
         // Remove delegator from UMA smart contract
@@ -64,7 +64,7 @@ export async function removeDelegatorIfInvalid(delegateAccount: PrivateKeyAccoun
 
 
 // Returns removed delegator address
-export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, redis: Redis): Promise<`0x${string}`> {
+export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, shouldBeRefunded: boolean, redis: Redis): Promise<`0x${string}`> {
 
     let delegatorAddress: `0x${string}` = ZERO_ADDRESS
 
@@ -72,6 +72,7 @@ export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, re
     let indexToRemove: number = -1
     let kvKey: string = ''
     let members: any[] = []
+    let isEarlyMember: boolean = false
 
 
     // Remove from MEMBERS
@@ -89,6 +90,11 @@ export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, re
         const memberToRemove = members[indexToRemove]
         delegateEncryptedPrivateKey = memberToRemove.pk as string
         delegatorAddress = memberToRemove.delegator
+        isEarlyMember = !!memberToRemove.early
+
+        if (isEarlyMember) {
+            shouldBeRefunded = false
+        }
 
         members.splice(indexToRemove, 1)
         const newMembers = {
@@ -106,11 +112,20 @@ export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, re
     // Add to PENDING
     kvKey = 'PENDING'
     const oldPending: any[] = (await redis.get(kvKey) as any).all as any[]
-    const newDelegate = {
+    let newDelegate: any = {
         delegate: delegateAddress,
         pk: delegateEncryptedPrivateKey,
         delegator: delegatorAddress
     };
+
+    if (isEarlyMember) {
+        newDelegate.early = true
+    }
+    
+    if (shouldBeRefunded) {
+        newDelegate.shouldBeRefunded = true
+    }
+
     oldPending.push(newDelegate)
 
     const newPending = {
@@ -131,19 +146,22 @@ export async function deleteMemberFromBackend(delegateAddress: `0x${string}`, re
 
 
 // Checks if the delegator still stakes, has the minimum UMA stake, & still has UMA.rocks as a delegate
-export function shouldRemoveDelegator(infos: DelegateMetadata): boolean {
+export function shouldRemoveDelegator(infos: DelegateMetadata): [shouldBeRemoved: boolean, shouldBeRefunded: boolean] {
 
     /* ⚠️ IMPORTANT: Protection to avoid removing delegators if the query to the smart contract failed.
     Indeed, it could simply be a Viem bug or RPC client downtime.
     Therefore, it's not a proof that the delegator is invalid and we shouldn't remove it. */
     if (!infos || infos.stakerAddress === undefined || infos.umaStake === undefined || infos.existingDelegate === undefined || process.env.MINIMUM_UMA_STAKE === undefined || Number(process.env.MINIMUM_UMA_STAKE) == 0 || Number(process.env.MINIMUM_UMA_STAKE) != 1000) {
-        return false
+        return [false, false]
     }
 
-    const isNotDelegatedToUmaRocks = infos.existingDelegate.toLowerCase() != infos.delegateAddress.toLowerCase()
     const hasNotEnoughStake = infos.umaStake < Number(process.env.MINIMUM_UMA_STAKE)
+    const isNotDelegatedToUmaRocks = infos.existingDelegate.toLowerCase() != infos.delegateAddress.toLowerCase()
+    
+    const shouldBeRemoved = hasNotEnoughStake || isNotDelegatedToUmaRocks
+    const shouldBeRefunded = isNotDelegatedToUmaRocks
 
-    return isNotDelegatedToUmaRocks || hasNotEnoughStake
+    return [shouldBeRemoved, shouldBeRefunded]
 
 }
 
