@@ -22,7 +22,7 @@ if (answers) {
     let embedFields: any[] = answers.map(a => {
         return {
             name: a.question,
-            value: a.skip ? 'Undecided' : `${a.answer}`,
+            value: a.skip ? 'Skip' : `${a.answer}`,
             inline: true
         }
     })
