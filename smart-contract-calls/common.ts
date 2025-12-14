@@ -17,7 +17,7 @@ export const voteRevealedEvent = 'event VoteRevealed(address indexed voter, addr
 
 export const supportedPriceIdentifiers = [
     'YES_OR_NO_QUERY', // see spec at https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-107.md
-    'ASSERT_TRUTH', // For Story Protocol
+    'ASSERT_TRUTH2', // For Story Protocol
     'Admin', // Governance vote (i.e. "Gas Rebate Program Refund | Jan 2024 - Dec 2024" has price identifier "Admin 206")
     'ACROSS-V2', // see spec at https://github.com/UMAprotocol/UMIPs/blob/895287dedcd6e9cfee30b84137b5823a6549afbc/UMIPs/umip-179.md
     'MULTIPLE_VALUES', // see voting round 10162 as an example && see spec at https://github.com/UMAprotocol/UMIPs/blob/master/UMIPs/umip-183.md
@@ -283,7 +283,7 @@ export function encodePrice(answer: string, priceIdentifier: PriceIdentifier): b
             encodedPrice = P4_VALUE
         }
 
-    } else if (priceIdentifier === "ASSERT_TRUTH") {
+    } else if (priceIdentifier === "ASSERT_TRUTH2") {
 
         if (isYes(answer)) {
             encodedPrice = ASSERT_TRUTH_TRUE
