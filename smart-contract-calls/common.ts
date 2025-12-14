@@ -478,9 +478,9 @@ export async function getFormattedRequests(publicClient: PublicClient): Promise<
         console.log(`****** Request #${i + 1} ******\n`)
         const r = requests[i]
 
-        const answer = answers.find(a => a.ancillaryData == r.ancillaryData)
+        const answer = answers.find(a => a.ancillaryData == r.ancillaryData && a.timestamp == r.time)
         if (answer === undefined) {
-            logError(`Couldn't find any answer matching the ancillaryData for request ${i + 1}`)
+            logError(`Couldn't find any answer matching the ancillaryData and timestamp for request ${i + 1}`)
             continue;
         }
 
@@ -615,7 +615,7 @@ export async function getLogs(eventAbiItem: string, args: any, publicClient: Pub
         })
 
     } catch (error: any) {
-        logError(error.message);
+        logError(`${error}`);
         return []
     }
 
@@ -748,7 +748,7 @@ function parseAnswersFile(answersFile: any): Answer[] | undefined {
 
         const a = answersFile[i]
 
-        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('answer')) {
+        if (!a.hasOwnProperty('ancillaryData') || !a.hasOwnProperty('timestamp') || !a.hasOwnProperty('answer')) {
             return undefined
         }
     }

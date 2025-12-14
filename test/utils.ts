@@ -19,9 +19,10 @@ export const SEED_PHRASE_OFFSET = 13
 
 export type Answer = {
     ancillaryData: `0x${string}`
+    timestamp: number
     question?: string
     answer: string
-    skip?: boolean
+    skip?: boolean // if true, do not commit for this dispute
     force?: boolean // if true, the answer will be committed even if another answer was already committed
 }
 
@@ -320,6 +321,7 @@ export async function scrapAnswers(page: Page): Promise<[boolean, boolean, Answe
             console.log(`\n> *** Dispute ${d} ***\n`)
             let answer: Answer = {
                 ancillaryData: '0x',
+                timestamp: 0,
                 question: '',
                 answer: ''
             }
