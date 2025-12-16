@@ -222,8 +222,10 @@ export async function saveAnswers(answers: Answer[], votingRound?: number): Prom
     });
     
     const fileName = votingRound ? `${votingRound}.json` : 'answers.json'
+    const filePath = `./test-data/${fileName}`
+    console.log(`Saving following answers in ${filePath}:`, answers)
 
-    fs.writeFile(`./test-data/${fileName}`, JSON.stringify(answers, undefined, 4), (error: any) => {
+    fs.writeFile(filePath, JSON.stringify(answers, undefined, 4), (error: any) => {
         if (error) {
             customResolve(false)
             logError(error)

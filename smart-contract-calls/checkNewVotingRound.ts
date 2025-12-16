@@ -29,7 +29,7 @@ async function run(): Promise<string> {
             // Create new answer object for request
             answers.push({
                 ancillaryData: r.ancillaryData,
-                timestamp: r.time,
+                timestamp: Number(r.time), // Make sure we have a Number and not a BigInt as BigInt value can't be serialized in JSON when saving the answers in the filesystem (see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/BigInt_not_serializable)
                 question: '', // will be populated later in enrich-answers.spec.ts
                 answer: 'P0'
             })
